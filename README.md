@@ -2,7 +2,7 @@
 Build, deploy, and connect AI agents to your WordPress with OpenKBS. This plugin provides a secure, bidirectional connection allowing your deployed agents to interact with your WordPress site through various events and APIs.
 
 
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/thxAIlH3YYo/0.jpg)](https://www.youtube.com/watch?v=thxAIlH3YYo)
+https://youtu.be/thxAIlH3YYo
 
 
 <p float="left">
