@@ -1,8 +1,8 @@
-=== OpenKBS AI Agents ===
+=== OpenKBS ===
 Contributors: openkbs
 Tags: ai, artificial intelligence, ai agents, chatbot, automation, woocommerce, contact form 7
-Requires at least: 6.7.1
-Tested up to: 6.4
+Requires at least: 6.7
+Tested up to: 6.7
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv3

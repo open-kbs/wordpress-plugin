@@ -2,9 +2,9 @@
 /*
     Plugin Name: OpenKBS
     Description: Connect AI Agents to your WordPress
-    Version: 1.0
+    Version: 1.0.0
     Author: OpenKBS
-    Text Domain: openkbs-ai
+    Text Domain: openkbs
     Domain Path: /languages
     License: GPL v3
     License URI: https://www.gnu.org/licenses/gpl-3.0.html

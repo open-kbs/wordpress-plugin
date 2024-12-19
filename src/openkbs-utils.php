@@ -84,11 +84,11 @@ function openkbs_enqueue_scripts() {
         'ajaxurl' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('openkbs-functions-nonce'),
         'i18n' => array(
-            'connectToOpenKBS' => __('Connect to OpenKBS', 'openkbs-ai'),
-            'requestingAccess' => __('OpenKBS is requesting access to your WordPress site.', 'openkbs-ai'),
-            'knowledgeBase' => __('Knowledge Base:', 'openkbs-ai'),
-            'cancel' => __('Cancel', 'openkbs-ai'),
-            'approveConnection' => __('Approve', 'openkbs-ai')
+            'connectToOpenKBS' => __('Connect to OpenKBS', 'openkbs'),
+            'requestingAccess' => __('OpenKBS is requesting access to your WordPress site.', 'openkbs'),
+            'knowledgeBase' => __('Knowledge Base:', 'openkbs'),
+            'cancel' => __('Cancel', 'openkbs'),
+            'approveConnection' => __('Approve', 'openkbs')
         )
     ));
 }
