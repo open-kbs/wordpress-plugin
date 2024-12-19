@@ -31,7 +31,7 @@ Build, deploy, and connect AI agents to your WordPress with OpenKBS. This plugin
 4. Click on your installed agent to open the chat interface and start interacting with your AI agent directly
 5. Optionally, you can subscribe your agent to WordPress events in OpenKBS Settings, configuring it to monitor and respond to events based on your instructions.
 
-The agent will now automatically receive your selected WordPress events and take actions as configured.
+The agent will now automatically receive your selected WordPress events and take actions as instructed.
 
 ## Security
 

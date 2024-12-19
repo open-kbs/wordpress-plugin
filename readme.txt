@@ -38,11 +38,22 @@ For more information, visit [OpenKBS Documentation](https://docs.openkbs.com).
 
 == Installation ==
 
-1. Upload the plugin files to the `/wp-content/plugins/openkbs` directory, or install the plugin through the WordPress plugins screen directly.
-2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Navigate to the OpenKBS menu in your WordPress admin panel.
-4. Install your desired AI agent blueprint and approve the connection between WordPress and OpenKBS.
-5. Configure your events and settings as needed.
+= Manual Installation =
+1. Download the plugin via [ZIP file](https://github.com/open-kbs/wordpress-plugin/archive/refs/heads/main.zip)
+2. Upload the plugin folder to `/wp-content/plugins/`
+3. Activate the plugin through the 'Plugins' menu in WordPress
+
+= From GitHub =
+1. Open terminal and run:
+   cd wp-content/plugins
+   git clone https://github.com/open-kbs/wordpress-plugin.git openkbs
+
+= Configuration =
+1. Navigate to the OpenKBS menu in your WordPress admin panel
+2. Install your desired AI agent blueprint and approve the connection between WordPress and OpenKBS.
+3. Once installed, you'll find your AI agent listed under the OpenKBS menu in the WordPress admin panel
+4. Click on your installed agent to open the chat interface and start interacting with your AI agent directly
+5. Optionally, you can subscribe your agent to WordPress events in OpenKBS Settings, configuring it to monitor and respond to events based on your instructions.
 
 == Frequently Asked Questions ==
 
@@ -63,11 +74,14 @@ We implement multiple security measures including encrypted communication, API k
 Yes, the plugin includes built-in support for WooCommerce events and actions.
 
 == Screenshots ==
-
-1. OpenKBS Dashboard
-2. AI Agent Configuration
-3. Event Management Interface
-4. Chat Interface
+1. AI Agent Blueprints listing page
+2. Install new AI agent
+3. Agent configuration screen
+4. Agent code editor
+5. Collaborators management page
+6. Chat interface
+7. Event management settings
+8. Filesystem API settings
 
 == Changelog ==
 
