@@ -49,7 +49,21 @@ The agent will now automatically receive your selected WordPress events and take
 
 ## Documentation
 
-For detailed documentation and API references, visit [OpenKBS Documentation](https://docs.openkbs.com)
+For detailed documentation and API references, visit [OpenKBS Documentation](https://openkbs.com/docs)
+
+## Screenshots
+
+<p float="left">
+  <img src="assets/screenshot-1.png" width="256" />
+  <img src="assets/screenshot-2.png" width="256" /> 
+  <img src="assets/screenshot-3.png" width="256" />
+  <img src="assets/screenshot-4.png" width="256" />
+  <img src="assets/screenshot-5.png" width="256" /> 
+  <img src="assets/screenshot-6.png" width="256" />
+  <img src="assets/screenshot-7.png" width="256" />
+  <img src="assets/screenshot-8.png" width="256" />
+</p>
+
 
 ## Support
 
