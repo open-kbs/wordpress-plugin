@@ -33,7 +33,11 @@ class OpenKBS_AI_Plugin {
         'openkbs/v1'
     ];
 
+    private $active_plugins = [];
+
     public function __construct() {
+        $this->active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
+
         // Enable REST API
         add_filter('rest_enabled', '__return_true');
         add_filter('rest_jsonp_enabled', '__return_true');
@@ -59,10 +63,15 @@ class OpenKBS_AI_Plugin {
         add_filter('admin_footer_text', 'openkbs_modify_admin_footer_text');
         add_filter('update_footer', 'openkbs_remove_update_footer', 11);
 
-        // Events
         add_action('init', 'openkbs_hook_wordpress_events');
-        add_action('init', 'openkbs_hook_woocommerce_events');
-        add_action('init', 'openkbs_hook_wpcf7_events');
+
+        if (in_array('woocommerce/woocommerce.php', $this->active_plugins)) {
+            add_action('init', 'openkbs_hook_woocommerce_events');
+        }
+    
+        if (in_array('contact-form-7/wp-contact-form-7.php', $this->active_plugins)) {
+            add_action('init', 'openkbs_hook_wpcf7_events');
+        }
     }
 
     public function register_api_key_authentication() {
