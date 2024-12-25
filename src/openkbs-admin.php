@@ -237,6 +237,22 @@ function openkbs_settings_page() {
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row">OpenKBS Private Key</th>
+                        <td>
+                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][walletPrivateKey]"
+                                   value="<?php echo esc_attr($app['walletPrivateKey']); ?>" class="regular-text">
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">OpenKBS Public Key</th>
+                        <td>
+                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][walletPublicKey]"
+                                   value="<?php echo esc_attr($app['walletPublicKey']); ?>" class="regular-text">
+                        </td>
+                    </tr>
+
+                    <tr>
                         <th scope="row">WP Plugin API Key</th>
                         <td>
                             <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][wpapiKey]"

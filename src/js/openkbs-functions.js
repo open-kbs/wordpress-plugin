@@ -162,6 +162,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var type = event.data.type;
         var kbId = event.data.kbId;
         var apiKey = event.data.apiKey;
+        var walletPrivateKey = event.data.walletPrivateKey;
+        var walletPublicKey = event.data.walletPublicKey;
         var kbTitle = event.data.kbTitle;
         var AESKey = event.data.AESKey;
         var JWT = event.data.JWT;
@@ -189,6 +191,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                     xhr.send('action=register_openkbs_app&kbId=' + encodeURIComponent(kbId) +
                             '&apiKey=' + encodeURIComponent(apiKey) +
+                            '&walletPrivateKey=' + encodeURIComponent(walletPrivateKey) +
+                            '&walletPublicKey=' + encodeURIComponent(walletPublicKey) +
                             '&JWT=' + encodeURIComponent(JWT) +
                             '&kbTitle=' + encodeURIComponent(kbTitle) +
                             '&AESKey=' + encodeURIComponent(AESKey));

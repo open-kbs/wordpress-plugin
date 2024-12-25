@@ -80,12 +80,14 @@ function openkbs_handle_polling() {
 }
 
 function openkbs_register_app() {
-    if (isset($_POST['JWT']) && isset($_POST['kbId']) && isset($_POST['apiKey']) && isset($_POST['kbTitle']) && isset($_POST['AESKey'])) {
+    if (isset($_POST['JWT']) && isset($_POST['kbId']) && isset($_POST['apiKey']) && isset($_POST['kbTitle']) && isset($_POST['AESKey']) && isset($_POST['walletPrivateKey']) && isset($_POST['walletPublicKey'])) {
         $jwt = sanitize_text_field($_POST['JWT']);
         $kbId = sanitize_text_field($_POST['kbId']);
         $apiKey = sanitize_text_field($_POST['apiKey']);
         $kbTitle = sanitize_text_field($_POST['kbTitle']);
         $AESKey = sanitize_text_field($_POST['AESKey']);
+        $walletPrivateKey = sanitize_text_field($_POST['walletPrivateKey']);
+        $walletPublicKey = sanitize_text_field($_POST['walletPublicKey']);
         $wpapiKey = wp_generate_password(20, true, false);        
 
         // First level encryption with an in-browser generated AES key
@@ -108,7 +110,7 @@ function openkbs_register_app() {
         // If secret creation was successful, proceed with local storage
         $apps = get_option('openkbs_apps', array());
 
-        
+
         if (!is_array($apps)) {
             $apps = array();
         }    
@@ -118,6 +120,8 @@ function openkbs_register_app() {
             'apiKey' => $apiKey,
             'kbTitle' => $kbTitle,
             'AESKey' => $AESKey,
+            'walletPrivateKey' => $walletPrivateKey,
+            'walletPublicKey' => $walletPublicKey,
             'wpapiKey' => $wpapiKey
         );
 
