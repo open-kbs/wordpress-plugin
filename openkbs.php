@@ -23,6 +23,7 @@ require_once plugin_dir_path(__FILE__) . 'src/openkbs-meta-plugin-api.php';
 require_once plugin_dir_path(__FILE__) . 'src/events-woo.php';
 require_once plugin_dir_path(__FILE__) . 'src/events-wpcf7.php';
 require_once plugin_dir_path(__FILE__) . 'src/events-wordpress.php';
+require_once plugin_dir_path(__FILE__) . 'src/semantic-search.php';
 
 
 
@@ -38,8 +39,6 @@ class OpenKBS_AI_Plugin {
 
     public function __construct() {
         $this->active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
-
-        // $vector = openkbs_get_embedding('asdasd', 'vqcol8ig2r4r', 'text-embedding-3-small');
 
         // Enable REST API
         add_filter('rest_enabled', '__return_true');
@@ -86,6 +85,12 @@ class OpenKBS_AI_Plugin {
         register_rest_route('openkbs/v1', '/callback', array(
             'methods' => 'POST',
             'callback' => 'openkbs_handle_callback',
+            'permission_callback' => array($this, 'check_openkbs_permission')
+        ));
+
+        register_rest_route('openkbs/v1', '/search', array(
+            'methods' => 'POST',
+            'callback' => 'openkbs_handle_search',
             'permission_callback' => array($this, 'check_openkbs_permission')
         ));
     }
@@ -225,6 +230,14 @@ class OpenKBS_AI_Plugin {
             flush_rewrite_rules();
         }
     }
+}
+
+// Register activation hook
+register_activation_hook(__FILE__, 'openkbs_activation_handler');
+
+function openkbs_activation_handler() {
+    openkbs_add_embedding_columns();
+    flush_rewrite_rules();
 }
 
 $plugin = new OpenKBS_AI_Plugin();

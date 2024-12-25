@@ -54,6 +54,20 @@ function openkbs_handle_callback(WP_REST_Request $request) {
     ), 200);
 }
 
+function openkbs_handle_search(WP_REST_Request $request) {
+    $params = $request->get_params();
+
+    if (!isset($params['post_id'])) {
+        return new WP_Error('missing_params', 'Missing required parameters', array('status' => 400));
+    }
+
+
+    return new WP_REST_Response(array(
+        'success' => true,
+        'message' => 'Callback received'
+    ), 200);
+}
+
 function openkbs_handle_polling() {
     check_ajax_referer('openkbs_polling_nonce', 'nonce');
     
@@ -229,7 +243,7 @@ function openkbs_publish($data, $chatTitle) {
     }
 }
 
-function openkbs_get_embedding($text, $app_id, $model = 'text-embedding-3-large') {
+function openkbs_get_embedding($text, $app_id, $model = 'text-embedding-3-large', $dimension = 1536) {
     $apps = openkbs_get_apps();
     $models = openkbs_get_embedding_models();
 
@@ -267,6 +281,11 @@ function openkbs_get_embedding($text, $app_id, $model = 'text-embedding-3-large'
     ]);
 
     $body = json_decode(wp_remote_retrieve_body($response), true);
+    $embedding = $body['data'][0]['embedding'];
 
-    return $body['data'][0]['embedding'];
+    if (count($embedding) > $dimension) {
+        $embedding = array_slice($embedding, 0, $dimension);
+    }
+
+    return $embedding;
 }
