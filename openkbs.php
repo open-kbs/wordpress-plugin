@@ -39,9 +39,7 @@ class OpenKBS_AI_Plugin {
     public function __construct() {
         $this->active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
 
-        $vector = openkbs_get_embedding('asdasd', 'vqcol8ig2r4r', 'text-embedding-3-small');
-
-        print_r($vector);
+        // $vector = openkbs_get_embedding('asdasd', 'vqcol8ig2r4r', 'text-embedding-3-small');
 
         // Enable REST API
         add_filter('rest_enabled', '__return_true');
