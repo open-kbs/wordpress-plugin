@@ -223,40 +223,50 @@ function openkbs_settings_page() {
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row">OpenKBS API Key</th>
+                        <th scope="row">Access Keys</th>
                         <td>
-                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][apiKey]"
-                                   value="<?php echo esc_attr($app['apiKey']); ?>" class="regular-text">
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">OpenKBS AES Key</th>
-                        <td>
-                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][AESKey]" 
-                                   value="<?php echo esc_attr($app['AESKey']); ?>" class="regular-text">
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">OpenKBS Private Key</th>
-                        <td>
-                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][walletPrivateKey]"
-                                   value="<?php echo esc_attr($app['walletPrivateKey']); ?>" class="regular-text">
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th scope="row">OpenKBS Public Key</th>
-                        <td>
-                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][walletPublicKey]"
-                                   value="<?php echo esc_attr($app['walletPublicKey']); ?>" class="regular-text">
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <th scope="row">WP Plugin API Key</th>
-                        <td>
-                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][wpapiKey]"
-                                   value="<?php echo esc_attr($app['wpapiKey']); ?>" class="regular-text" readonly>
+                            <button type="button" class="button toggle-api-keys" data-app-id="<?php echo $app_id; ?>">
+                                <span class="dashicons dashicons-arrow-right"></span> Show Access Keys
+                            </button>
+                            <div class="api-keys-section" style="display: none; margin-top: 15px;">
+                                <table class="api-keys-table" style="border-collapse: collapse; width: 100%;">
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <label>OpenKBS API Key</label><br>
+                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][apiKey]"
+                                                   value="<?php echo esc_attr($app['apiKey']); ?>" class="regular-text">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <label>OpenKBS AES Key</label><br>
+                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][AESKey]"
+                                                   value="<?php echo esc_attr($app['AESKey']); ?>" class="regular-text">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <label>OpenKBS Private Key</label><br>
+                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][walletPrivateKey]"
+                                                   value="<?php echo esc_attr($app['walletPrivateKey']); ?>" class="regular-text">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <label>OpenKBS Public Key</label><br>
+                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][walletPublicKey]"
+                                                   value="<?php echo esc_attr($app['walletPublicKey']); ?>" class="regular-text">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <label>WP Plugin API Key</label><br>
+                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][wpapiKey]"
+                                                   value="<?php echo esc_attr($app['wpapiKey']); ?>" class="regular-text" readonly>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
                         </td>
                     </tr>
 
@@ -631,10 +641,49 @@ function openkbs_settings_page() {
         .wakeword-input.active {
             display: inline-block;
         }
+        .toggle-api-keys {
+            display: flex !important;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .toggle-api-keys .dashicons {
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-api-keys.active .dashicons {
+            transform: rotate(90deg);
+        }
+
+        .api-keys-table td {
+            padding: 8px 0;
+        }
+
+        .api-keys-table label {
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 4px;
+            display: inline-block;
+        }
     </style>
 
     <script>
     jQuery(document).ready(function($) {
+        $('.toggle-api-keys').click(function() {
+            const button = $(this);
+            const keysSection = button.next('.api-keys-section');
+
+            keysSection.slideToggle(200, function() {
+                button.toggleClass('active');
+
+                if (button.hasClass('active')) {
+                    button.html('<span class="dashicons dashicons-arrow-right"></span> Hide Access Keys');
+                } else {
+                    button.html('<span class="dashicons dashicons-arrow-right"></span> Show Access Keys');
+                }
+            });
+        });
+
         // Toggle sections
         $('.plugin-title').click(function() {
             $(this).find('.dashicons').toggleClass('dashicons-arrow-right-alt2 dashicons-arrow-down-alt2');
