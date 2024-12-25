@@ -34,6 +34,18 @@ class OpenKBS_AI_Plugin {
     ];
 
     public function __construct() {
+        // Enable REST API
+        add_filter('rest_enabled', '__return_true');
+        add_filter('rest_jsonp_enabled', '__return_true');
+
+        // Remove any potential REST API restrictions
+        remove_filter('rest_api_init', 'disable_rest_api');
+
+        // Ensure proper URL rewriting for REST API
+        add_filter('rest_url_prefix', function($prefix) {
+            return 'wp-json';
+        });
+
         add_action('rest_api_init', array($this, 'register_api_key_authentication'), 15);
         add_action('rest_api_init', array($this, 'openkbs_register_endpoints'));
         add_action('wp_ajax_register_openkbs_app', 'openkbs_register_app');
@@ -192,9 +204,19 @@ class OpenKBS_AI_Plugin {
         // Set the current user to the newly created user
         wp_set_current_user($user->ID);
     }
+
+    // ensure permalinks are set correctly
+    public function ensure_rest_api_enabled() {
+        // Make sure permalinks are not set to "plain"
+        if (get_option('permalink_structure') === '') {
+            update_option('permalink_structure', '/%postname%/');
+            flush_rewrite_rules();
+        }
+    }
 }
 
-new OpenKBS_AI_Plugin();
+$plugin = new OpenKBS_AI_Plugin();
+$plugin->ensure_rest_api_enabled();
 
 // Hook the admin menu and settings functions directly
 add_action('admin_menu', 'openkbs_add_admin_menu');
