@@ -223,49 +223,94 @@ function openkbs_settings_page() {
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row">Access Keys</th>
+                        <th scope="row">Semantic Search</th>
                         <td>
-                            <button type="button" class="button toggle-api-keys" data-app-id="<?php echo $app_id; ?>">
-                                <span class="dashicons dashicons-arrow-right"></span> Show Access Keys
-                            </button>
-                            <div class="api-keys-section" style="display: none; margin-top: 15px;">
-                                <table class="api-keys-table" style="border-collapse: collapse; width: 100%;">
-                                    <tr>
-                                        <td style="padding: 8px 0;">
-                                            <label>OpenKBS API Key</label><br>
-                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][apiKey]"
-                                                   value="<?php echo esc_attr($app['apiKey']); ?>" class="regular-text">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0;">
-                                            <label>OpenKBS AES Key</label><br>
-                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][AESKey]"
-                                                   value="<?php echo esc_attr($app['AESKey']); ?>" class="regular-text">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0;">
-                                            <label>OpenKBS Private Key</label><br>
-                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][walletPrivateKey]"
-                                                   value="<?php echo esc_attr($app['walletPrivateKey']); ?>" class="regular-text">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0;">
-                                            <label>OpenKBS Public Key</label><br>
-                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][walletPublicKey]"
-                                                   value="<?php echo esc_attr($app['walletPublicKey']); ?>" class="regular-text">
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0;">
-                                            <label>WP Plugin API Key</label><br>
-                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][wpapiKey]"
-                                                   value="<?php echo esc_attr($app['wpapiKey']); ?>" class="regular-text" readonly>
-                                        </td>
-                                    </tr>
-                                </table>
+                            <label class="switch">
+                                <input type="checkbox"
+                                       name="openkbs_apps[<?php echo $app_id; ?>][semantic_search][enabled]"
+                                       class="semantic-search-toggle"
+                                       <?php checked(isset($app['semantic_search']['enabled']) && $app['semantic_search']['enabled'], true); ?>>
+                                <span class="slider round"></span>
+                            </label>
+
+                            <div class="semantic-search-settings" style="margin-top: 15px; display: <?php echo (isset($app['semantic_search']['enabled']) && $app['semantic_search']['enabled']) ? 'block' : 'none'; ?>;">
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; margin-bottom: 5px;"><strong>Indexed Post Types</strong></label>
+                                <div class="post-types-container">
+                                    <!-- Post types selection -->
+                                    <div class="post-types-selection">
+                                        <label class="post-type-label">
+                                            <input type="radio" name="openkbs_apps[<?php echo $app_id; ?>][semantic_search][post_types_mode]"
+                                                   value="all" class="post-type-mode"
+                                                   <?php checked(isset($app['semantic_search']['post_types_mode']) && $app['semantic_search']['post_types_mode'] === 'all', true); ?>>
+                                            Index All Post Types
+                                        </label>
+
+                                        <label class="post-type-label">
+                                            <input type="radio" name="openkbs_apps[<?php echo $app_id; ?>][semantic_search][post_types_mode]"
+                                                   value="specific" class="post-type-mode"
+                                                   <?php checked(isset($app['semantic_search']['post_types_mode']) && $app['semantic_search']['post_types_mode'] === 'specific', true); ?>>
+                                            Index Specific Post Types
+                                        </label>
+                                    </div>
+
+                                    <div class="specific-types-container" style="display: <?php echo (isset($app['semantic_search']['post_types_mode']) && $app['semantic_search']['post_types_mode'] === 'specific') ? 'block' : 'none'; ?>;">
+                                        <!-- Post types input -->
+                                        <div class="post-types-input">
+                                            <input type="text" class="post-type-input" placeholder="Add post type (e.g., post, page, product)">
+                                            <button type="button" class="button add-post-type">Add</button>
+                                        </div>
+
+                                        <!-- Selected post types list -->
+                                        <div class="selected-types-list">
+                                            <?php
+                                            if (isset($app['semantic_search']['post_types']) && is_array($app['semantic_search']['post_types'])) {
+                                                foreach ($app['semantic_search']['post_types'] as $type) {
+                                                    echo '<div class="post-type-item">';
+                                                    echo '<input type="hidden" name="openkbs_apps[' . $app_id . '][semantic_search][post_types][]" value="' . esc_attr($type) . '">';
+                                                    echo '<span>' . esc_html($type) . '</span>';
+                                                    echo '<button type="button" class="remove-post-type">×</button>';
+                                                    echo '</div>';
+                                                }
+                                            }
+                                            ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                                <div style="margin-bottom: 15px;">
+                                    <label style="display: block; margin-bottom: 5px;"><strong>Embedding Model</strong></label>
+                                    <select name="openkbs_apps[<?php echo $app_id; ?>][semantic_search][embedding_model]" class="embedding-model-select" data-app-id="<?php echo $app_id; ?>">
+                                        <?php
+                                        $models = openkbs_get_embedding_models();
+                                        foreach ($models as $model_id => $model) {
+                                            $selected = isset($app['semantic_search']['embedding_model']) && $app['semantic_search']['embedding_model'] === $model_id;
+                                            echo '<option value="' . esc_attr($model_id) . '" ' .
+                                                 'data-default="' . esc_attr($model['default_dimension']) . '" ' .
+                                                 'data-max="' . esc_attr($model['max_dimension']) . '" ' .
+                                                 selected($selected, true, false) . '>' .
+                                                 esc_html($model['name']) . '</option>';
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+
+                                <div style="margin-bottom: 15px;">
+                                    <label style="display: block; margin-bottom: 5px;"><strong>Embedding Dimensions</strong></label>
+                                    <select name="openkbs_apps[<?php echo $app_id; ?>][semantic_search][embedding_dimensions]" class="dimension-select">
+                                        <?php
+                                        $dimensions = [256, 512, 768, 1024, 1536, 3072];
+                                        $selected_dimension = isset($app['semantic_search']['embedding_dimensions']) ?
+                                                            $app['semantic_search']['embedding_dimensions'] : 1536;
+                                        foreach ($dimensions as $dim) {
+                                            echo '<option value="' . esc_attr($dim) . '" ' .
+                                                 selected($selected_dimension, $dim, false) . '>' .
+                                                 esc_html($dim) . '</option>';
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -347,6 +392,53 @@ function openkbs_settings_page() {
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Access Keys</th>
+                        <td>
+                            <button type="button" class="button toggle-api-keys" data-app-id="<?php echo $app_id; ?>">
+                                <span class="dashicons dashicons-arrow-right"></span> Show Access Keys
+                            </button>
+                            <div class="api-keys-section" style="display: none; margin-top: 15px;">
+                                <table class="api-keys-table" style="border-collapse: collapse; width: 100%;">
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <label>OpenKBS API Key</label><br>
+                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][apiKey]"
+                                                   value="<?php echo esc_attr($app['apiKey']); ?>" class="regular-text">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <label>OpenKBS AES Key</label><br>
+                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][AESKey]"
+                                                   value="<?php echo esc_attr($app['AESKey']); ?>" class="regular-text">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <label>OpenKBS Private Key</label><br>
+                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][walletPrivateKey]"
+                                                   value="<?php echo esc_attr($app['walletPrivateKey']); ?>" class="regular-text">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <label>OpenKBS Public Key</label><br>
+                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][walletPublicKey]"
+                                                   value="<?php echo esc_attr($app['walletPublicKey']); ?>" class="regular-text">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 8px 0;">
+                                            <label>WP Plugin API Key</label><br>
+                                            <input type="password" name="openkbs_apps[<?php echo $app_id; ?>][wpapiKey]"
+                                                   value="<?php echo esc_attr($app['wpapiKey']); ?>" class="regular-text" readonly>
+                                        </td>
+                                    </tr>
+                                </table>
                             </div>
                         </td>
                     </tr>
@@ -665,10 +757,165 @@ function openkbs_settings_page() {
             margin-bottom: 4px;
             display: inline-block;
         }
-    </style>
 
-    <script>
-    jQuery(document).ready(function($) {
+        .post-types-container {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            background: #fff;
+        }
+
+        .post-types-selection {
+            margin-bottom: 10px;
+        }
+
+        .post-type-label {
+            display: inline-block;
+            margin-right: 15px;
+            margin-bottom: 5px;
+        }
+
+        .post-types-input {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .post-type-input {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .selected-types-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .post-type-item {
+            display: inline-flex;
+            align-items: center;
+            background: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        .remove-post-type {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 0 0 0 5px;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .remove-post-type:hover {
+            color: #dc3232;
+        }
+            </style>
+
+            <script>
+            jQuery(document).ready(function($) {
+        // Handle post type mode selection
+        $('.post-type-mode').change(function() {
+            const specificContainer = $(this).closest('.post-types-container').find('.specific-types-container');
+            if ($(this).val() === 'specific') {
+                specificContainer.slideDown();
+            } else {
+                specificContainer.slideUp();
+                // Clear specific post types when switching to 'all'
+                specificContainer.find('.selected-types-list').empty();
+            }
+        });
+
+        // Handle post type addition
+        $('.add-post-type').click(function() {
+            const container = $(this).closest('.post-types-container');
+            const input = container.find('.post-type-input');
+            const value = input.val().trim().toLowerCase();
+
+            // Validate input
+            if (value === '') return;
+
+            // Check if already exists
+            const existingInputs = container.find('.post-type-item input[type="hidden"]');
+            let exists = false;
+            existingInputs.each(function() {
+                if ($(this).val() === value) {
+                    exists = true;
+                    return false;
+                }
+            });
+
+            if (exists) {
+                alert('This post type already exists');
+                return;
+            }
+
+            // Create new post type item
+            const appId = $(this).closest('tr').find('.embedding-model-select').data('app-id');
+            const newItem = $('<div class="post-type-item">' +
+                '<input type="hidden" name="openkbs_apps[' + appId + '][semantic_search][post_types][]" value="' + value + '">' +
+                '<span>' + value + '</span>' +
+                '<button type="button" class="remove-post-type">×</button>' +
+                '</div>');
+
+            container.find('.selected-types-list').append(newItem);
+            input.val('');
+        });
+
+        // Handle post type removal
+        $(document).on('click', '.remove-post-type', function() {
+            $(this).closest('.post-type-item').remove();
+        });
+
+        // Handle enter key in post type input
+        $('.post-type-input').keypress(function(e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                $(this).closest('.post-types-input').find('.add-post-type').click();
+            }
+        });
+
+        // Initialize toggle states on page load
+        $('.semantic-search-toggle').each(function() {
+            const settingsSection = $(this).closest('td').find('.semantic-search-settings');
+            if ($(this).is(':checked')) {
+                settingsSection.show();
+                // Initialize embedding model restrictions
+                settingsSection.find('.embedding-model-select').trigger('change');
+            } else {
+                settingsSection.hide();
+            }
+        });
+
+        // Handle semantic search toggle
+        $('.semantic-search-toggle').change(function() {
+            const settingsSection = $(this).closest('td').find('.semantic-search-settings');
+            if ($(this).is(':checked')) {
+                settingsSection.slideDown(300);
+
+                // Initialize default values if empty
+                const postTypesMode = settingsSection.find('input[name$="[post_types_mode]"]:checked').length === 0;
+                if (postTypesMode) {
+                    // Set default to 'all' if no option is selected
+                    settingsSection.find('input[name$="[post_types_mode]"][value="all"]').prop('checked', true);
+                }
+
+                // Trigger change to ensure proper display of specific types container
+                settingsSection.find('input[name$="[post_types_mode]"]:checked').trigger('change');
+
+                // Initialize embedding model restrictions
+                settingsSection.find('.embedding-model-select').trigger('change');
+            } else {
+                settingsSection.slideUp(300);
+            }
+        });
+
         $('.toggle-api-keys').click(function() {
             const button = $(this);
             const keysSection = button.next('.api-keys-section');

@@ -308,12 +308,14 @@ function openkbs_get_embedding_models() {
             'accountId' => 'e08661d0b2fad0873b63be1f122c92a1',
             'name' => 'OpenAI Text Embedding v3 large',
             'context' => 8191,
-            'dimension' => 3072,
+            'default_dimension' => 1536,
+            'max_dimension' => 3072,
         ],
         'text-embedding-3-small' => [
             'accountId' => '1c4e67b5351f79272f7ebe20f0495557',
             'name' => 'OpenAI Text Embedding v3 small',
-            'dimension' => 1536,
+            'default_dimension' => 1536,
+            'max_dimension' => 1536,
             'context' => 8191
         ]
     ];
