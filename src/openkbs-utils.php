@@ -152,3 +152,169 @@ function openkbs_modify_admin_footer_text() {
 function openkbs_remove_update_footer() {
     return '';
 }
+
+// Sign valid payment transaction to OpenKBS service
+function openkbs_sign_payload($payload, $accountId, $publicKey, $walletPrivateKey, $expiresInSeconds = 60) {
+    try {
+        // Check if publicKey hash matches accountId
+        $hashHex = hash('sha256', $publicKey);
+        if (substr($hashHex, 0, 32) !== $accountId) {
+            throw new Exception("Public key does not belong to this accountId $accountId");
+        }
+
+        // Define JWT header
+        $header = [
+            'alg' => 'ES256',
+            'typ' => 'JWT'
+        ];
+
+        // Add 'exp' to payload
+        $payload['exp'] = time() + $expiresInSeconds;
+
+        // Encode header and payload to Base64Url
+        $encodedHeader = openkbs_base64_url_encode(json_encode($header));
+        $encodedPayload = openkbs_base64_url_encode(json_encode($payload));
+
+        // Prepare data to sign
+        $dataToSign = $encodedHeader . '.' . $encodedPayload;
+
+        // Decode base64 private key from 'walletPrivateKey'
+        $privateKeyDer = base64_decode($walletPrivateKey);
+
+        // Convert DER to PEM format
+        $privateKeyPem = openkbs_der_to_pem($privateKeyDer, 'PRIVATE KEY');
+
+        // Sign the data
+        $signature = openkbs_create_signature($dataToSign, $privateKeyPem);
+
+        // Base64Url encode the signature
+        $encodedSignature = openkbs_base64_url_encode($signature);
+
+        // Construct the JWT
+        return $dataToSign . '.' . $encodedSignature;
+
+    } catch (Exception $e) {
+        error_log('JWT Signing Error: ' . $e->getMessage());
+        return null;
+    }
+}
+
+function openkbs_create_signature($data, $privateKeyPem) {
+    // Sign the data using OpenSSL with ECDSA using SHA256
+    $signature = '';
+    $success = openssl_sign($data, $signature, $privateKeyPem, OPENSSL_ALGO_SHA256);
+
+    if (!$success) {
+        throw new Exception('Failed to sign data');
+    }
+
+    // Convert DER signature to R and S components
+    $rs = openkbs_der_to_rs($signature);
+
+    return $rs;
+}
+
+function openkbs_der_to_rs($der_signature) {
+    $offset = 0;
+    if (ord($der_signature[$offset++]) != 0x30) {
+        throw new Exception('Invalid DER signature (expected sequence)');
+    }
+
+    // Skip length
+    if (ord($der_signature[$offset]) & 0x80) {
+        $lengthBytes = ord($der_signature[$offset++]) & 0x7F;
+        $offset += $lengthBytes;
+    } else {
+        $offset++;
+    }
+
+    // INTEGER for R
+    if (ord($der_signature[$offset++]) != 0x02) {
+        throw new Exception('Invalid DER signature (expected integer for R)');
+    }
+
+    $rLength = ord($der_signature[$offset++]);
+    if ($rLength & 0x80) {
+        $lengthBytes = $rLength & 0x7F;
+        $rLength = 0;
+        for ($i = 0; $i < $lengthBytes; $i++) {
+            $rLength = ($rLength << 8) + ord($der_signature[$offset++]);
+        }
+    }
+
+    $r = substr($der_signature, $offset, $rLength);
+    $offset += $rLength;
+
+    // INTEGER for S
+    if (ord($der_signature[$offset++]) != 0x02) {
+        throw new Exception('Invalid DER signature (expected integer for S)');
+    }
+
+    $sLength = ord($der_signature[$offset++]);
+    if ($sLength & 0x80) {
+        $lengthBytes = $sLength & 0x7F;
+        $sLength = 0;
+        for ($i = 0; $i < $lengthBytes; $i++) {
+            $sLength = ($sLength << 8) + ord($der_signature[$offset++]);
+        }
+    }
+
+    $s = substr($der_signature, $offset, $sLength);
+
+    // Pad R and S to 32 bytes
+    $r = openkbs_pad_zero(ltrim($r, "\x00"), 32);
+    $s = openkbs_pad_zero(ltrim($s, "\x00"), 32);
+
+    return $r . $s;
+}
+
+function openkbs_pad_zero($data, $size) {
+    return str_pad($data, $size, "\x00", STR_PAD_LEFT);
+}
+
+function openkbs_der_to_pem($der_data, $label) {
+    $pem = chunk_split(base64_encode($der_data), 64, "\n");
+    return "-----BEGIN $label-----\n$pem-----END $label-----\n";
+}
+
+function openkbs_base64_url_encode($data) {
+    return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+}
+
+function openkbs_generate_txn_id() {
+    return sprintf('%d-%d',
+        round(microtime(true) * 1000),
+        rand(100000, 999999)
+    );
+}
+
+function openkbs_create_account_id($publicKeyBase64) {
+    return substr(hash('sha256', $publicKeyBase64), 0, 32);
+}
+
+function openkbs_get_apps() {
+    static $cached_apps = null;
+
+    if ($cached_apps === null) {
+        $cached_apps = get_option('openkbs_apps', array());
+    }
+
+    return $cached_apps;
+}
+
+function openkbs_get_embedding_models() {
+    return [
+        'text-embedding-3-large' => [
+            'accountId' => 'e08661d0b2fad0873b63be1f122c92a1',
+            'name' => 'OpenAI Text Embedding v3 large',
+            'context' => 8191,
+            'dimension' => 3072,
+        ],
+        'text-embedding-3-small' => [
+            'accountId' => '1c4e67b5351f79272f7ebe20f0495557',
+            'name' => 'OpenAI Text Embedding v3 small',
+            'dimension' => 1536,
+            'context' => 8191
+        ]
+    ];
+}

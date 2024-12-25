@@ -28,7 +28,7 @@ function openkbs_add_admin_menu() {
     );
 
     // Add registered apps as submenu items
-    $apps = get_option('openkbs_apps', array());
+    $apps = openkbs_get_apps();
     foreach ($apps as $app_id => $app) {
         add_submenu_page(
             'openkbs-main-menu',
@@ -63,7 +63,7 @@ function openkbs_blueprints_page() {
 function openkbs_render_app_page() {
     $current_page = $_GET['page'];
     $app_id = str_replace('openkbs-app-', '', $current_page);
-    $apps = get_option('openkbs_apps', array());
+    $apps = openkbs_get_apps();
     
     if (isset($apps[$app_id])) {
         $is_localhost = explode(':', $_SERVER['HTTP_HOST'])[0] === 'localhost';
@@ -184,7 +184,7 @@ function openkbs_get_available_wp_actions() {
 }
 
 function openkbs_settings_page() {
-    $apps = get_option('openkbs_apps', array());
+    $apps = openkbs_get_apps();
 
     $available_actions = openkbs_get_available_wp_actions();
     ?>

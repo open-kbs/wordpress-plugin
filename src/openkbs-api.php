@@ -108,7 +108,7 @@ function openkbs_register_app() {
         }
         
         // If secret creation was successful, proceed with local storage
-        $apps = get_option('openkbs_apps', array());
+        $apps = openkbs_get_apps();
 
 
         if (!is_array($apps)) {
@@ -139,7 +139,7 @@ function openkbs_register_app() {
 function openkbs_delete_app() {
     if (isset($_POST['app_id'])) {
         $app_id = sanitize_text_field($_POST['app_id']);
-        $apps = get_option('openkbs_apps', array());
+        $apps = openkbs_get_apps();
         
         if (isset($apps[$app_id])) {
             unset($apps[$app_id]);
@@ -156,7 +156,7 @@ function openkbs_delete_app() {
 function openkbs_get_app() {
     $current_page = $_GET['page'];
     $app_id = str_replace('openkbs-app-', '', $current_page);
-    $apps = get_option('openkbs_apps', array());
+    $apps = openkbs_get_apps();
     return $apps[$app_id];
 }
 
@@ -175,7 +175,7 @@ function openkbs_create_encrypted_payload($content, $chatTitle, $app) {
 }
 
 function openkbs_publish($data, $chatTitle) {
-    $apps = get_option('openkbs_apps', array());
+    $apps = openkbs_get_apps();
     $event = $data['event'];
 
     $data['_wordpress']['post_id'] = get_the_ID() ?? null;
@@ -227,4 +227,46 @@ function openkbs_publish($data, $chatTitle) {
         $polling_key = 'openkbs_polling_' . $data['_wordpress']['post_id'];
         set_transient($polling_key, true, 60);
     }
+}
+
+function openkbs_get_embedding($text, $app_id, $model = 'text-embedding-3-large') {
+    $apps = openkbs_get_apps();
+    $models = openkbs_get_embedding_models();
+
+    // Validate model
+    if (!isset($models[$model])) {
+        throw new Exception("Invalid embedding model specified");
+    }
+
+    $walletPrivateKey = $apps[$app_id]['walletPrivateKey'];
+    $walletPublicKey = $apps[$app_id]['walletPublicKey'];
+    $accountId = openkbs_create_account_id($walletPublicKey);
+
+    $transactionJWT = openkbs_sign_payload([
+      'operation' => 'transfer',
+      'resourceId' => 'credits',
+      'transactionId' => openkbs_generate_txn_id(),
+      'fromAccountId' => $accountId,
+      'fromAccountPublicKey' => $walletPublicKey,
+      'toAccountId' => $models[$model]['accountId'],
+      'message' => '',
+      'maxAmount' => 100000, // one USD
+      'iat' => round(microtime(true))
+    ], $accountId, $walletPublicKey, $walletPrivateKey);
+
+    $response = wp_remote_post('https://openai.openkbs.com/', [
+        'headers' => [
+            'Content-Type' => 'application/json',
+            'Transaction-JWT' => $transactionJWT
+        ],
+        'body' => json_encode([
+            'action' => 'createEmbedding',
+            'input' => $text,
+            'model' => $model
+        ])
+    ]);
+
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+
+    return $body['data'][0]['embedding'];
 }

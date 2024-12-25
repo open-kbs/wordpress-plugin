@@ -25,6 +25,7 @@ require_once plugin_dir_path(__FILE__) . 'src/events-wpcf7.php';
 require_once plugin_dir_path(__FILE__) . 'src/events-wordpress.php';
 
 
+
 class OpenKBS_AI_Plugin {
     // Whitelist of API namespaces that can be accessed with HTTP_WP_API_KEY
     private $allowed_api_namespaces = [
@@ -37,6 +38,10 @@ class OpenKBS_AI_Plugin {
 
     public function __construct() {
         $this->active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
+
+        $vector = openkbs_get_embedding('asdasd', 'vqcol8ig2r4r', 'text-embedding-3-small');
+
+        print_r($vector);
 
         // Enable REST API
         add_filter('rest_enabled', '__return_true');
@@ -184,7 +189,7 @@ class OpenKBS_AI_Plugin {
 
     private function validate_api_key_against_db($api_key) {
         $api_key = sanitize_text_field($api_key);
-        $apps = get_option('openkbs_apps', array());
+        $apps = openkbs_get_apps();
         foreach ($apps as $app) {
             if (hash_equals($app['wpapiKey'], $api_key)) {
                 return true;
