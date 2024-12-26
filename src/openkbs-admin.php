@@ -223,6 +223,13 @@ function openkbs_settings_page() {
                         </td>
                     </tr>
                     <tr>
+                        <th scope="row">ID</th>
+                        <td>
+                            <input type="text" disabled name="openkbs_apps[<?php echo $app_id; ?>][kbId]"
+                                   value="<?php echo esc_attr($app['kbId']); ?>" class="regular-text">
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row">Semantic Search</th>
                         <td>
                             <label class="switch">

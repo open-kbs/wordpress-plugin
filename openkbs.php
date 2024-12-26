@@ -24,7 +24,7 @@ require_once plugin_dir_path(__FILE__) . 'src/events-woo.php';
 require_once plugin_dir_path(__FILE__) . 'src/events-wpcf7.php';
 require_once plugin_dir_path(__FILE__) . 'src/events-wordpress.php';
 require_once plugin_dir_path(__FILE__) . 'src/semantic-search.php';
-
+require_once plugin_dir_path(__FILE__) . 'src/search-widget.php';
 
 
 class OpenKBS_AI_Plugin {
@@ -36,6 +36,7 @@ class OpenKBS_AI_Plugin {
     ];
 
     private $active_plugins = [];
+    private $public_search_enabled = null;
 
     public function __construct() {
         $this->active_plugins = apply_filters('active_plugins', get_option('active_plugins'));
@@ -64,6 +65,8 @@ class OpenKBS_AI_Plugin {
         add_action('wp_ajax_openkbs_check_callback', 'openkbs_handle_polling');
         add_action('wp_ajax_toggle_filesystem_api', 'openkbs_handle_filesystem_api_toggle');
         add_action('wp_ajax_toggle_public_search', 'openkbs_handle_public_search_toggle');
+        add_shortcode('openkbs_search', array($this, 'render_search_widget'));
+
 
         add_filter('admin_footer_text', 'openkbs_modify_admin_footer_text');
         add_filter('update_footer', 'openkbs_remove_update_footer', 11);
@@ -77,6 +80,18 @@ class OpenKBS_AI_Plugin {
         if (in_array('contact-form-7/wp-contact-form-7.php', $this->active_plugins)) {
             add_action('init', 'openkbs_hook_wpcf7_events');
         }
+    }
+
+    private function is_openkbs_public_search_enabled() {
+        if ($this->public_search_enabled === null) {
+            $this->public_search_enabled = (bool) get_option('openkbs_public_search_enabled');
+        }
+        return $this->public_search_enabled;
+    }
+
+    public function render_search_widget($atts) {
+        openkbs_enqueue_search_widget_assets();
+        return openkbs_get_search_widget_html($atts);
     }
 
     public function register_api_key_authentication() {
@@ -106,7 +121,7 @@ class OpenKBS_AI_Plugin {
 
     public function check_public_search_permission() {
         // Check if public search is enabled
-        if (!get_option('openkbs_public_search_enabled')) {
+        if (!$this->is_openkbs_public_search_enabled()) {
             return new WP_Error(
                 'rest_forbidden',
                 'Public search is not enabled.',
@@ -142,6 +157,12 @@ class OpenKBS_AI_Plugin {
         $current_route = $this->get_current_route();
         $is_allowed_namespace = $this->is_allowed_namespace($current_route);
 
+        // Check if this is the public search endpoint and if public search is enabled
+        if ($current_route === 'openkbs/v1/search-public' && $this->is_openkbs_public_search_enabled()) {
+            $this->set_current_user_with_full_access();
+            return null; // Allow access without API key
+        }
+
         // If API key is provided and route is in allowed namespaces
         if (!empty($api_key_header) && $is_allowed_namespace) {
             if ($this->validate_api_key_against_db($api_key_header)) {
@@ -156,7 +177,7 @@ class OpenKBS_AI_Plugin {
             }
         }
 
-        // For OpenKBS endpoints, always require API key
+        // For OpenKBS endpoints (except public search), always require API key
         if (strpos($current_route, 'openkbs/v1') === 0) {
             return new WP_Error(
                 'rest_forbidden',

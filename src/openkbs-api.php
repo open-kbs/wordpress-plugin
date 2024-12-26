@@ -315,7 +315,7 @@ function openkbs_handle_search(WP_REST_Request $request) {
 
     $limit = isset($params['limit']) ? intval($params['limit']) : 10;
     $itemTypes = isset($params['itemTypes']) ? (array)$params['itemTypes'] : null;
-    $kbId = isset($params['kbId']) ? $params['kbId'] : null;
+    $kbId = (isset($params['kbId']) && $params['kbId']) ? $params['kbId'] : null;
 
     try {
         // Get all public post types
@@ -354,7 +354,7 @@ function openkbs_handle_search(WP_REST_Request $request) {
                 );
             }
         } elseif (!isset($apps[$kbId])) {
-            return new WP_Error('invalid_kb', 'Invalid kbId specified', array('status' => 400));
+            return new WP_Error('invalid_kb', 'Invalid kbId specified:', array('status' => 400));
         }
 
         $app = $apps[$kbId];

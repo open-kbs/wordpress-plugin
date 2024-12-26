@@ -4,29 +4,9 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-function openkbs_log($data, $prefix = 'Debug') {
-    // Check if WP_DEBUG and WP_DEBUG_LOG are enabled
-    if (!defined('WP_DEBUG') || !WP_DEBUG || !defined('WP_DEBUG_LOG') || !WP_DEBUG_LOG) {
-        return;
-    }
-
-    // Get timestamp
-    $timestamp = current_time('Y-m-d H:i:s');
-
-    // Prepare the log message
-    if (is_array($data) || is_object($data)) {
-        $log_message = print_r($data, true);
-    } else {
-        $log_message = $data;
-    }
-
-    // Format the complete log entry
-    $log_entry = "[{$timestamp}] [{$prefix}] {$log_message}\n";
-
-    // Use WordPress native error logging
-    error_log($log_entry);
+function openkbs_log($data) {
+    file_put_contents('/tmp/debug.log', print_r($data,true));
 }
-
 
 function openkbs_load_svg($svg_path) {
     $icon_path = plugin_dir_path(__FILE__) . $svg_path;
