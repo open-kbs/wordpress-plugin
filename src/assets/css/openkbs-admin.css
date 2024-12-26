@@ -1,0 +1,277 @@
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.wakeword-info {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 5px;
+}
+
+.example-box {
+    font-family: "Courier New", Courier, monospace;
+    background-color: #f5f5f5;
+    color: #333;
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin-top: 5px;
+    white-space: pre-wrap;
+    font-size: 0.9em;
+}
+
+.wakeword-info .dashicons {
+    color: #007cba;
+    font-size: 16px;
+    cursor: help;
+}
+
+.wakeword-info .tooltip {
+    visibility: hidden;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    background-color: #333;
+    color: #fff;
+    text-align: left;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.wakeword-info .tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.wakeword-info:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Optional: Add a subtle animation */
+@keyframes tooltipFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.wakeword-info:hover .tooltip {
+    animation: tooltipFade 0.3s ease-in-out;
+}
+.plugin-section, .category-section {
+    border: 1px solid #eee;
+    margin: 5px 0;
+    padding: 5px;
+    background: #fff;
+}
+
+.plugin-title, .category-title {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 5px 0;
+}
+
+.plugin-title:hover, .category-title:hover {
+    color: #2271b1;
+}
+
+.plugin-content, .category-content {
+    display: none;
+    padding-left: 20px;
+}
+
+.event-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    margin: 2px 0;
+    border-radius: 4px;
+}
+
+.event-item:hover {
+    background-color: #f5f5f5;
+}
+
+.event-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.event-label {
+    font-size: 13px;
+}
+
+.wakeword-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wakeword-toggle {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #666;
+}
+
+.wakeword-input {
+    display: none;
+    width: 120px;
+    padding: 2px 5px;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.wakeword-input.active {
+    display: inline-block;
+}
+.toggle-api-keys {
+    display: flex !important;
+    align-items: center;
+    gap: 5px;
+}
+
+.toggle-api-keys .dashicons {
+    transition: transform 0.3s ease;
+}
+
+.toggle-api-keys.active .dashicons {
+    transform: rotate(90deg);
+}
+
+.api-keys-table td {
+    padding: 8px 0;
+}
+
+.api-keys-table label {
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 4px;
+    display: inline-block;
+}
+
+.post-types-container {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+    background: #fff;
+}
+
+.post-types-selection {
+    margin-bottom: 10px;
+}
+
+.post-type-label {
+    display: inline-block;
+    margin-right: 15px;
+    margin-bottom: 5px;
+}
+
+.post-types-input {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.post-type-input {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.selected-types-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.post-type-item {
+    display: inline-flex;
+    align-items: center;
+    background: #f0f0f0;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 13px;
+}
+
+.remove-post-type {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 0 0 0 5px;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.remove-post-type:hover {
+    color: #dc3232;
+}

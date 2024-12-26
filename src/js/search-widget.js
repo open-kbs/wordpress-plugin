@@ -110,11 +110,11 @@ jQuery(document).ready(function($) {
                 },
                 error: function(xhr) {
                     loadingSpinner.hide();
-                    resultsContainer.html(`
-                        <div class="error-message">
-                            An error occurred while searching. Please try again later.
-                        </div>
-                    `);
+                    const msg = xhr?.status === 403
+                        ? 'Public Search API Disabled.' +
+                        'To enable it, please navigate to OpenKBS Search Settings'
+                        : 'An error occurred while searching. Please try again later.'
+                    resultsContainer.html(`<div class="error-message">${msg}</div>`);
                     widget.find('.results-title').text('Error');
                 }
             });

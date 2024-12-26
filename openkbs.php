@@ -16,7 +16,7 @@ if (!defined('WPINC')) {
 }
 
 require_once plugin_dir_path(__FILE__) . 'src/openkbs-utils.php';
-require_once plugin_dir_path(__FILE__) . 'src/openkbs-admin.php';
+require_once plugin_dir_path(__FILE__) . 'src/settings/openkbs-admin.php';
 require_once plugin_dir_path(__FILE__) . 'src/openkbs-api.php';
 require_once plugin_dir_path(__FILE__) . 'src/openkbs-filesystem-api.php';
 require_once plugin_dir_path(__FILE__) . 'src/openkbs-meta-plugin-api.php';
