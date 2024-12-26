@@ -55,6 +55,7 @@ function openkbs_add_admin_menu() {
 
 function openkbs_settings_page() {
     $apps = openkbs_get_apps();
+    $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'general';
 
     wp_enqueue_style(
         'openkbs-admin',
@@ -64,10 +65,26 @@ function openkbs_settings_page() {
     $available_actions = openkbs_get_available_wp_actions();
     ?>
     <div class="wrap">
+       <h2 class="nav-tab-wrapper">
+            <a href="?page=openkbs-settings" class="nav-tab <?php echo $current_tab === 'general' ? 'nav-tab-active' : ''; ?>">Agents</a>
+            <a href="?page=openkbs-settings&tab=search" class="nav-tab <?php echo $current_tab === 'search' ? 'nav-tab-active' : ''; ?>">Search</a>
+            <a href="?page=openkbs-settings&tab=filesystem" class="nav-tab <?php echo $current_tab === 'filesystem' ? 'nav-tab-active' : ''; ?>">Filesystem API</a>
+        </h2>
+        <?php
+        switch($current_tab) {
+            case 'search':
+                openkbs_render_search_settings();
+                break;
+
+            case 'filesystem':
+                openkbs_render_filesystem_settings();
+                break;
+
+            default: // 'Agents'
+                ?>
         <form method="post" action="options.php">
-        <h2 style="margin: 0;padding-bottom: 20px;">OpenKBS Apps Settings</h2>
             <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">                
-            <?php !empty($apps) && submit_button('Save Agents'); ?>    
+            <?php !empty($apps) && submit_button('Save All'); ?>
             </div>
             <?php settings_fields('openkbs_settings'); ?>
             
@@ -354,13 +371,13 @@ function openkbs_settings_page() {
             </div>
             <?php endforeach; ?>
 
-            <?php !empty($apps) && submit_button('Save Agents'); ?>    
+            <?php !empty($apps) && submit_button('Save All'); ?>
         </form>
-
-        <?php
-        openkbs_render_search_settings();
-        openkbs_render_filesystem_settings();
+                <?php
+                break;
+        }
         ?>
+        </div>
 
         <script>
             jQuery(document).ready(function($) {

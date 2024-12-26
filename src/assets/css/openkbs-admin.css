@@ -275,3 +275,7 @@ input:checked + .slider:before {
 .remove-post-type:hover {
     color: #dc3232;
 }
+
+.nav-tab-wrapper {
+    margin-bottom: 20px;
+}
