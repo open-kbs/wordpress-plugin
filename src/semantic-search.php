@@ -119,8 +119,8 @@ function openkbs_get_post_embedding($post_id) {
     );
 }
 
-// Add bulk processing function for existing posts
-function openkbs_process_existing_posts($app) {
+// Add bulk processing function for existing posts with option to process only unindexed posts
+function openkbs_process_existing_posts($app, $only_unindexed = true) {
     $semantic_search = $app['semantic_search'];
 
     $args = array(
@@ -131,7 +131,26 @@ function openkbs_process_existing_posts($app) {
         'post_status' => 'publish'
     );
 
-    $posts = get_posts($args);
+    // Add meta query if we only want unindexed posts
+    if ($only_unindexed) {
+        global $wpdb;
+        $posts = $wpdb->get_results(
+            $wpdb->prepare(
+                "SELECT ID, post_title, post_content
+                FROM {$wpdb->posts}
+                WHERE post_status = 'publish'
+                AND (openkbs_embedding_model IS NULL OR openkbs_embedding_model = '')
+                AND post_type " . ($semantic_search['post_types_mode'] === 'all'
+                    ? "NOT IN ('revision', 'auto-draft')"
+                    : "IN ('" . implode("','", $semantic_search['post_types']) . "')")
+            )
+        );
+    } else {
+        $posts = get_posts($args);
+    }
+
+    $processed_count = 0;
+    $total_posts = count($posts);
 
     foreach ($posts as $post) {
         $content_for_embedding = $post->post_title . ' ' . strip_tags($post->post_content);
@@ -149,16 +168,28 @@ function openkbs_process_existing_posts($app) {
                 $embedding,
                 $semantic_search['embedding_model']
             );
+            $processed_count++;
         }
     }
+
+    return array(
+        'total' => $total_posts,
+        'processed' => $processed_count
+    );
 }
 
-// Optional: Add an admin action to process all existing posts
-function openkbs_process_all_posts_for_app($app_id) {
+// Optional: Add an admin action to process posts for app
+function openkbs_process_all_posts_for_app($app_id, $only_unindexed = true) {
     $apps = openkbs_get_apps();
     if (isset($apps[$app_id]) &&
         isset($apps[$app_id]['semantic_search']['enabled']) &&
         $apps[$app_id]['semantic_search']['enabled'] === 'on') {
-        openkbs_process_existing_posts($apps[$app_id]);
+
+        return openkbs_process_existing_posts($apps[$app_id], $only_unindexed);
     }
+    return array(
+        'total' => 0,
+        'processed' => 0,
+        'error' => 'App not found or semantic search not enabled'
+    );
 }

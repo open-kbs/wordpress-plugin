@@ -57,6 +57,8 @@ class OpenKBS_AI_Plugin {
         add_action('wp_ajax_register_openkbs_app', 'openkbs_register_app');
         add_action('wp_ajax_nopriv_register_openkbs_app', 'openkbs_register_app');
         add_action('wp_ajax_delete_openkbs_app', 'openkbs_delete_app');
+        add_action('wp_ajax_process_posts_for_indexing', 'openkbs_ajax_process_posts');
+
         add_action('admin_enqueue_scripts', 'openkbs_enqueue_scripts');
         add_action('admin_enqueue_scripts', 'openkbs_enqueue_polling_scripts');
         add_action('wp_ajax_openkbs_check_callback', 'openkbs_handle_polling');

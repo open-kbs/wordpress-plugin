@@ -297,6 +297,32 @@ function openkbs_settings_page() {
                                 </div>
 
                                 <div style="margin-bottom: 15px;">
+                                    <label style="display: block; margin-bottom: 5px;"><strong>Index Posts</strong></label>
+                                    <div style="background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 4px;">
+                                        <div style="margin-bottom: 10px;">
+                                            <label style="margin-right: 15px;">
+                                                <input type="checkbox" class="index-only-unindexed" checked>
+                                                Only process unindexed posts
+                                            </label>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <button type="button" class="button index-posts-button" data-app-id="<?php echo esc_attr($app_id); ?>">
+                                                Start Indexing
+                                            </button>
+                                            <div class="indexing-status" style="display: none;">
+                                                <span class="spinner is-active" style="float: none; margin: 0 4px 0 0;"></span>
+                                                <span class="status-text">Processing...</span>
+                                            </div>
+                                        </div>
+                                        <div class="indexing-results" style="margin-top: 10px; display: none;">
+                                            <div style="font-size: 13px; color: #666;">
+                                                Posts processed: <span class="processed-count">0</span> / <span class="total-count">0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 15px;">
                                     <label style="display: block; margin-bottom: 5px;"><strong>Embedding Dimensions</strong></label>
                                     <select name="openkbs_apps[<?php echo $app_id; ?>][semantic_search][embedding_dimensions]" class="dimension-select">
                                         <?php
@@ -483,6 +509,47 @@ function openkbs_settings_page() {
 
         <script>
             jQuery(document).ready(function($) {
+                // Indexing functionality
+                $('.index-posts-button').click(function() {
+                    const button = $(this);
+                    const appId = button.data('app-id');
+                    const statusDiv = button.siblings('.indexing-status');
+                    const resultsDiv = button.closest('div').siblings('.indexing-results');
+                    const onlyUnindexed = button.closest('div').parent().find('.index-only-unindexed').is(':checked');
+
+                    // Disable button and show status
+                    button.prop('disabled', true);
+                    statusDiv.show();
+                    resultsDiv.hide();
+
+                    // Make AJAX call to process posts
+                    $.ajax({
+                        url: ajaxurl,
+                        type: 'POST',
+                        data: {
+                            action: 'process_posts_for_indexing',
+                            app_id: appId,
+                            only_unindexed: onlyUnindexed,
+                            nonce: '<?php echo wp_create_nonce("process_posts_nonce"); ?>'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                resultsDiv.show();
+                                resultsDiv.find('.processed-count').text(response.data.processed);
+                                resultsDiv.find('.total-count').text(response.data.total);
+                            } else {
+                                alert('Error processing posts: ' + response.data);
+                            }
+                        },
+                        error: function() {
+                            alert('Network error occurred while processing posts.');
+                        },
+                        complete: function() {
+                            button.prop('disabled', false);
+                            statusDiv.hide();
+                        }
+                    });
+                });
                 $('#filesystem-api-toggle').change(function() {
                     const isEnabled = $(this).is(':checked');
                     const statusMessage = $('#api-status-message');

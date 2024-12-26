@@ -289,3 +289,33 @@ function openkbs_get_embedding($text, $app_id, $model = 'text-embedding-3-large'
 
     return $embedding;
 }
+
+/**
+ * Handle AJAX request for processing posts for indexing
+ */
+function openkbs_ajax_process_posts() {
+    // Verify nonce and capabilities
+    check_ajax_referer('process_posts_nonce', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('Unauthorized access');
+    }
+
+    // Get parameters
+    $app_id = isset($_POST['app_id']) ? sanitize_text_field($_POST['app_id']) : '';
+    $only_unindexed = isset($_POST['only_unindexed']) ? $_POST['only_unindexed'] === 'true' : true;
+
+    if (empty($app_id)) {
+        wp_send_json_error('App ID is required');
+    }
+
+    try {
+        // Process the posts
+        $result = openkbs_process_all_posts_for_app($app_id, $only_unindexed);
+
+        // Send success response
+        wp_send_json_success($result);
+    } catch (Exception $e) {
+        wp_send_json_error('Error processing posts: ' . $e->getMessage());
+    }
+}
