@@ -320,3 +320,25 @@ function openkbs_get_embedding_models() {
         ]
     ];
 }
+
+// Helper function to calculate cosine similarity
+function openkbs_cosine_similarity($vec1, $vec2) {
+    $dot_product = 0;
+    $mag1 = 0;
+    $mag2 = 0;
+
+    foreach ($vec1 as $i => $val1) {
+        $dot_product += $val1 * $vec2[$i];
+        $mag1 += $val1 * $val1;
+        $mag2 += $vec2[$i] * $vec2[$i];
+    }
+
+    $mag1 = sqrt($mag1);
+    $mag2 = sqrt($mag2);
+
+    if ($mag1 == 0 || $mag2 == 0) {
+        return 0;
+    }
+
+    return $dot_product / ($mag1 * $mag2);
+}

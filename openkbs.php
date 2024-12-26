@@ -91,7 +91,7 @@ class OpenKBS_AI_Plugin {
         ));
 
         register_rest_route('openkbs/v1', '/search', array(
-            'methods' => 'POST',
+            'methods' => 'GET',
             'callback' => 'openkbs_handle_search',
             'permission_callback' => array($this, 'check_openkbs_permission')
         ));

@@ -54,20 +54,6 @@ function openkbs_handle_callback(WP_REST_Request $request) {
     ), 200);
 }
 
-function openkbs_handle_search(WP_REST_Request $request) {
-    $params = $request->get_params();
-
-    if (!isset($params['post_id'])) {
-        return new WP_Error('missing_params', 'Missing required parameters', array('status' => 400));
-    }
-
-
-    return new WP_REST_Response(array(
-        'success' => true,
-        'message' => 'Callback received'
-    ), 200);
-}
-
 function openkbs_handle_polling() {
     check_ajax_referer('openkbs_polling_nonce', 'nonce');
     
@@ -318,4 +304,198 @@ function openkbs_ajax_process_posts() {
     } catch (Exception $e) {
         wp_send_json_error('Error processing posts: ' . $e->getMessage());
     }
+}
+
+function openkbs_handle_search(WP_REST_Request $request) {
+    $params = $request->get_params();
+
+    if (!isset($params['query'])) {
+        return new WP_Error('missing_params', 'Missing required parameter: query', array('status' => 400));
+    }
+
+    $limit = isset($params['limit']) ? intval($params['limit']) : 10;
+    $itemTypes = isset($params['itemTypes']) ? (array)$params['itemTypes'] : null;
+    $kbId = isset($params['kbId']) ? $params['kbId'] : null;
+
+    try {
+        // Get all public post types
+        $public_post_types = get_post_types(['public' => true]);
+
+        // Filter itemTypes to ensure only public types are included
+        if ($itemTypes !== null) {
+            $itemTypes = array_intersect($itemTypes, $public_post_types);
+
+            // If after filtering there are no valid post types, return an error
+            if (empty($itemTypes)) {
+                return new WP_Error(
+                    'invalid_item_types',
+                    'No valid public post types specified',
+                    array('status' => 400)
+                );
+            }
+        }
+
+        $apps = openkbs_get_apps();
+
+        if ($kbId === null) {
+            foreach ($apps as $appId => $appData) {
+                if (isset($appData['semantic_search']['enabled']) &&
+                    $appData['semantic_search']['enabled'] === 'on') {
+                    $kbId = $appId;
+                    break;
+                }
+            }
+
+            if ($kbId === null) {
+                return new WP_Error(
+                    'no_search_enabled',
+                    'No application found with semantic search enabled',
+                    array('status' => 400)
+                );
+            }
+        } elseif (!isset($apps[$kbId])) {
+            return new WP_Error('invalid_kb', 'Invalid kbId specified', array('status' => 400));
+        }
+
+        $app = $apps[$kbId];
+
+        if (!isset($app['semantic_search']['enabled']) || $app['semantic_search']['enabled'] !== 'on') {
+            return new WP_Error(
+                'search_disabled',
+                'Semantic search is not enabled for this application',
+                array('status' => 400)
+            );
+        }
+
+        // Determine post types to search while ensuring only public types are included
+        if ($itemTypes !== null) {
+            $post_types = $itemTypes;
+        } elseif ($app['semantic_search']['post_types_mode'] === 'all') {
+            $post_types = $public_post_types;
+        } elseif ($app['semantic_search']['post_types_mode'] === 'specific') {
+            $post_types = array_intersect($app['semantic_search']['post_types'], $public_post_types);
+        }
+
+        // If no valid post types are available, return an error
+        if (empty($post_types)) {
+            return new WP_Error(
+                'no_valid_post_types',
+                'No valid public post types available for search',
+                array('status' => 400)
+            );
+        }
+
+        $query_embedding = openkbs_get_embedding(
+            $params['query'],
+            $kbId,
+            $app['semantic_search']['embedding_model'],
+            $app['semantic_search']['embedding_dimensions']
+        );
+
+        global $wpdb;
+        $post_type_placeholders = implode(',', array_fill(0, count($post_types), '%s'));
+        $query = $wpdb->prepare(
+            "SELECT ID, post_title, post_content, post_excerpt, post_type, openkbs_embedding
+            FROM {$wpdb->posts}
+            WHERE post_type IN ($post_type_placeholders)
+            AND post_status = 'publish'
+            AND openkbs_embedding IS NOT NULL",
+            $post_types
+        );
+
+        $posts = $wpdb->get_results($query);
+
+        $results = [];
+        foreach ($posts as $post) {
+            $post_embedding = json_decode($post->openkbs_embedding, true);
+            if ($post_embedding) {
+                $similarity = openkbs_cosine_similarity($query_embedding, $post_embedding);
+
+                // Get featured image info
+                $image_info = openkbs_get_post_image($post->ID);
+
+                // Get post excerpt
+                $excerpt = !empty($post->post_excerpt)
+                    ? $post->post_excerpt
+                    : wp_trim_words(strip_shortcodes($post->post_content), 55);
+
+                $results[] = [
+                    'id' => $post->ID,
+                    'title' => $post->post_title,
+                    'excerpt' => $excerpt,
+                    'similarity' => $similarity,
+                    'url' => get_permalink($post->ID),
+                    'post_type' => $post->post_type,
+                    'image' => $image_info
+                ];
+            }
+        }
+
+        usort($results, function($a, $b) {
+            return $b['similarity'] <=> $a['similarity'];
+        });
+
+        $results = array_slice($results, 0, $limit);
+
+        return new WP_REST_Response([
+            'success' => true,
+            'results' => $results,
+            'kbId' => $kbId
+        ], 200);
+
+    } catch (Exception $e) {
+        return new WP_Error('search_error', $e->getMessage(), array('status' => 500));
+    }
+}
+
+
+/**
+ * Helper function to get post image information
+ */
+function openkbs_get_post_image($post_id) {
+    $image_info = array(
+        'thumbnail' => null,
+        'medium' => null,
+        'large' => null,
+        'full' => null
+    );
+
+    // First try to get the featured image
+    if (has_post_thumbnail($post_id)) {
+        $thumbnail_id = get_post_thumbnail_id($post_id);
+    } else {
+        // If no featured image, try to get the first image from the post
+        $post = get_post($post_id);
+        $first_image = openkbs_get_first_image_from_post($post->post_content);
+        if ($first_image) {
+            $thumbnail_id = attachment_url_to_postid($first_image);
+        }
+    }
+
+    // If we found an image, get its various sizes
+    if (!empty($thumbnail_id)) {
+        $image_sizes = array('thumbnail', 'medium', 'large', 'full');
+        foreach ($image_sizes as $size) {
+            $image = wp_get_attachment_image_src($thumbnail_id, $size);
+            if ($image) {
+                $image_info[$size] = array(
+                    'url' => $image[0],
+                    'width' => $image[1],
+                    'height' => $image[2]
+                );
+            }
+        }
+    }
+
+    return $image_info;
+}
+
+/**
+ * Helper function to extract the first image from post content
+ */
+function openkbs_get_first_image_from_post($content) {
+    if (preg_match('/<img.+?src=[\'"]([^\'"]+)[\'"].*?>/i', $content, $matches)) {
+        return $matches[1];
+    }
+    return null;
 }

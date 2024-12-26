@@ -122,16 +122,8 @@ function openkbs_get_post_embedding($post_id) {
 // Add bulk processing function for existing posts with option to process only unindexed posts
 function openkbs_process_existing_posts($app, $only_unindexed = true) {
     $semantic_search = $app['semantic_search'];
+    $limit = 5;
 
-    $args = array(
-        'post_type' => $semantic_search['post_types_mode'] === 'all'
-            ? 'any'
-            : $semantic_search['post_types'],
-        'posts_per_page' => -1,
-        'post_status' => 'publish'
-    );
-
-    // Add meta query if we only want unindexed posts
     if ($only_unindexed) {
         global $wpdb;
         $where_post_type = $semantic_search['post_types_mode'] === 'all'
@@ -143,12 +135,24 @@ function openkbs_process_existing_posts($app, $only_unindexed = true) {
             FROM {$wpdb->posts}
             WHERE post_status = 'publish'
             AND (openkbs_embedding_model IS NULL OR openkbs_embedding_model = '')
-            AND post_type " . $where_post_type,
-            $semantic_search['post_types_mode'] === 'all' ? [] : $semantic_search['post_types']
+            AND post_type " . $where_post_type . "
+            LIMIT %d",
+            array_merge(
+                $semantic_search['post_types_mode'] === 'all' ? [] : $semantic_search['post_types'],
+                [$limit]
+            )
         );
 
         $posts = $wpdb->get_results($query);
     } else {
+        $args = array(
+            'post_type' => $semantic_search['post_types_mode'] === 'all'
+                ? 'any'
+                : $semantic_search['post_types'],
+            'posts_per_page' => $limit, // Limit to 5 posts
+            'post_status' => 'publish'
+        );
+
         $posts = get_posts($args);
     }
 

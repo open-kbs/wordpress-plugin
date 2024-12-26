@@ -297,7 +297,7 @@ function openkbs_settings_page() {
                                 </div>
 
                                 <div style="margin-bottom: 15px;">
-                                    <label style="display: block; margin-bottom: 5px;"><strong>Index Posts</strong></label>
+                                    <label style="display: block; margin-bottom: 5px;"><strong>Indexing Posts</strong></label>
                                     <div style="background: #f9f9f9; padding: 15px; border: 1px solid #ddd; border-radius: 4px;">
                                         <div style="margin-bottom: 10px;">
                                             <label style="margin-right: 15px;">
@@ -316,7 +316,7 @@ function openkbs_settings_page() {
                                         </div>
                                         <div class="indexing-results" style="margin-top: 10px; display: none;">
                                             <div style="font-size: 13px; color: #666;">
-                                                Posts processed: <span class="processed-count">0</span> / <span class="total-count">0</span>
+                                                Posts processed: <span class="processed-count">0</span></span>
                                             </div>
                                         </div>
                                     </div>
@@ -507,8 +507,153 @@ function openkbs_settings_page() {
             </table>
         </div>
 
+        <div class="search-test-interface" style="margin-bottom: 30px; padding: 20px; background: #fff; border: 1px solid #ccc;">
+            <h3>Search Test Interface</h3>
+
+            <div style="max-width: 800px;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Select Knowledge Base</label>
+                    <select id="search-kb-select" style="width: 100%; max-width: 400px;">
+                        <?php
+                        $apps = openkbs_get_apps();
+                        foreach ($apps as $app_id => $app) {
+                            if (isset($app['semantic_search']['enabled']) && $app['semantic_search']['enabled'] === 'on') {
+                                echo '<option value="' . esc_attr($app_id) . '" ' .
+                                     'data-api-key="' . esc_attr($app['wpapiKey']) . '">' .
+                                     esc_html($app['kbTitle']) . '</option>';
+                            }
+                        }
+                        ?>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Search Query</label>
+                    <input type="text" id="search-query" style="width: 100%;" placeholder="Enter your search query">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Results Limit</label>
+                    <input type="number" id="search-limit" value="10" min="1" max="100" style="width: 100px;">
+                </div>
+
+                <button type="button" id="run-search" class="button button-primary">Run Search</button>
+
+                <div id="search-results" style="margin-top: 20px; display: none;">
+                    <h4>Search Results</h4>
+                    <div id="results-container"></div>
+                </div>
+            </div>
+        </div>
+
+
         <script>
             jQuery(document).ready(function($) {
+                $('#run-search').click(function() {
+                    const button = $(this);
+                    const resultsDiv = $('#search-results');
+                    const resultsContainer = $('#results-container');
+
+                    // Get search parameters
+                    const query = $('#search-query').val();
+                    const kbId = $('#search-kb-select').val();
+                    const limit = $('#search-limit').val();
+
+                    if (!query) {
+                        alert('Please enter a search query');
+                        return;
+                    }
+
+                    // Get the API key for the selected KB
+                    const apiKey = $('#search-kb-select option:selected').data('api-key');
+
+                    if (!apiKey) {
+                        alert('No API key found for the selected knowledge base');
+                        return;
+                    }
+
+                    // Show loading state
+                    button.prop('disabled', true).text('Searching...');
+                    resultsContainer.html('<div class="spinner is-active" style="float: none; margin: 0;"></div>');
+                    resultsDiv.show();
+
+                    // Make API request
+                    $.ajax({
+                        url: '<?php echo esc_url_raw(rest_url('openkbs/v1/search')); ?>',
+                        method: 'GET',
+                        data: {
+                            query: query,
+                            kbId: kbId,
+                            limit: limit
+                        },
+                        beforeSend: function(xhr) {
+                            xhr.setRequestHeader('WP-API-KEY', apiKey);
+                        },
+                        success: function(response) {
+                            if (response.success && response.results) {
+                                // Clear previous results
+                                resultsContainer.empty();
+
+                                if (response.results.length === 0) {
+                                    resultsContainer.html('<p>No results found.</p>');
+                                    return;
+                                }
+
+                                // Create results table
+                                const table = $('<table class="wp-list-table widefat fixed striped">').appendTo(resultsContainer);
+
+                                // Add table header
+                                table.append(`
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px;">Score</th>
+                                            <th>Title</th>
+                                            <th>Type</th>
+                                            <th style="width: 100px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                `);
+
+                                // Add results
+                                const tbody = $('<tbody>').appendTo(table);
+                                response.results.forEach(function(result) {
+                                    const score = (result.similarity * 100).toFixed(2);
+                                    const row = $('<tr>').appendTo(tbody);
+
+                                    row.append(`
+                                        <td>${score}%</td>
+                                        <td>${result.title}</td>
+                                        <td>${result.post_type}</td>
+                                        <td>
+                                            <a href="${result.url}" target="_blank" class="button button-small">View</a>
+                                        </td>
+                                    `);
+                                });
+                            } else {
+                                resultsContainer.html('<p>Error: ' + (response.message || 'Unknown error occurred') + '</p>');
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            let errorMessage = error;
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                errorMessage = response.message || error;
+                            } catch (e) {}
+                            resultsContainer.html('<p class="error" style="color: #dc3232;">Error: ' + errorMessage + '</p>');
+                        },
+                        complete: function() {
+                            button.prop('disabled', false).text('Run Search');
+                        }
+                    });
+                });
+
+                // Allow Enter key to trigger search
+                $('#search-query').keypress(function(e) {
+                    if (e.which === 13) {
+                        $('#run-search').click();
+                    }
+                });
+
                 // Indexing functionality
                 $('.index-posts-button').click(function() {
                     const button = $(this);
@@ -522,34 +667,60 @@ function openkbs_settings_page() {
                     statusDiv.show();
                     resultsDiv.hide();
 
-                    // Make AJAX call to process posts
-                    $.ajax({
-                        url: ajaxurl,
-                        type: 'POST',
-                        data: {
-                            action: 'process_posts_for_indexing',
-                            app_id: appId,
-                            only_unindexed: onlyUnindexed,
-                            nonce: '<?php echo wp_create_nonce("process_posts_nonce"); ?>'
-                        },
-                        success: function(response) {
-                            if (response.success) {
-                                resultsDiv.show();
-                                resultsDiv.find('.processed-count').text(response.data.processed);
-                                resultsDiv.find('.total-count').text(response.data.total);
-                            } else {
-                                alert('Error processing posts: ' + response.data);
+                    // Initialize cumulative counter
+                    let totalProcessed = 0;
+                    let isFirstBatch = true;
+
+                    function processIndexing() {
+                        $.ajax({
+                            url: ajaxurl,
+                            type: 'POST',
+                            data: {
+                                action: 'process_posts_for_indexing',
+                                app_id: appId,
+                                only_unindexed: onlyUnindexed,
+                                nonce: '<?php echo wp_create_nonce("process_posts_nonce"); ?>'
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    // Update counters
+                                    totalProcessed += parseInt(response.data.processed);
+
+                                    // Store initial total on first batch
+                                    if (isFirstBatch) {
+                                        isFirstBatch = false;
+                                    }
+
+                                    resultsDiv.show();
+                                    resultsDiv.find('.processed-count').text(totalProcessed);
+
+                                    // If only processing unindexed items and there are still items to process
+                                    if (onlyUnindexed && response.data.total > 0) {
+                                        // Continue processing after a short delay
+                                        setTimeout(processIndexing, 1000); // 1 second delay between batches
+                                    } else {
+                                        // Enable button and hide status when complete
+                                        button.prop('disabled', false);
+                                        statusDiv.hide();
+                                    }
+                                } else {
+                                    alert('Error processing posts: ' + response.data);
+                                    button.prop('disabled', false);
+                                    statusDiv.hide();
+                                }
+                            },
+                            error: function() {
+                                alert('An error occurred. Please try again.');
+                                button.prop('disabled', false);
+                                statusDiv.hide();
                             }
-                        },
-                        error: function() {
-                            alert('Network error occurred while processing posts.');
-                        },
-                        complete: function() {
-                            button.prop('disabled', false);
-                            statusDiv.hide();
-                        }
-                    });
+                        });
+                    }
+
+                    // Start the processing
+                    processIndexing();
                 });
+
                 $('#filesystem-api-toggle').change(function() {
                     const isEnabled = $(this).is(':checked');
                     const statusMessage = $('#api-status-message');
@@ -885,8 +1056,8 @@ function openkbs_settings_page() {
         }
             </style>
 
-            <script>
-            jQuery(document).ready(function($) {
+    <script>
+    jQuery(document).ready(function($) {
         // Handle post type mode selection
         $('.post-type-mode').change(function() {
             const specificContainer = $(this).closest('.post-types-container').find('.specific-types-container');
