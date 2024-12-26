@@ -31,6 +31,9 @@ jQuery(document).ready(function($) {
         const noResults = widget.find('.no-results');
         const searchResults = widget.find('.search-results');
 
+        // Get itemTypes from data attribute
+        const itemTypes = input.data('item-types');
+
         clearTimeout(searchTimeout);
 
         if (query.length < 2) {
@@ -45,14 +48,22 @@ jQuery(document).ready(function($) {
             loadingSpinner.show();
             noResults.hide();
 
+            // Prepare request data
+            const requestData = {
+                query: query,
+                limit: input.data('limit'),
+                kbId: input.data('kb-id')
+            };
+
+            // Add itemTypes if specified
+            if (itemTypes && itemTypes.length > 0) {
+                requestData.itemTypes = itemTypes;
+            }
+
             $.ajax({
                 url: openkbsSearch.ajaxUrl,
                 method: 'GET',
-                data: {
-                    query: query,
-                    limit: input.data('limit'),
-                    kbId: input.data('kb-id')
-                },
+                data: requestData,
                 success: function(response) {
                     loadingSpinner.hide();
 

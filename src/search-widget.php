@@ -24,7 +24,10 @@ function openkbs_get_search_widget_html($atts) {
         'placeholder' => 'Search...',
         'limit' => 10,
         'kb_id' => '',
+        'item_types' => '',
     ), $atts);
+
+    $item_types = array_filter(array_map('trim', explode(',', $atts['item_types'])));
 
     ob_start();
     ?>
@@ -34,7 +37,8 @@ function openkbs_get_search_widget_html($atts) {
                    class="search-input"
                    placeholder="<?php echo esc_attr($atts['placeholder']); ?>"
                    data-limit="<?php echo esc_attr($atts['limit']); ?>"
-                   data-kb-id="<?php echo esc_attr($atts['kb_id']); ?>">
+                   data-kb-id="<?php echo esc_attr($atts['kb_id']); ?>"
+                   data-item-types="<?php echo esc_attr(json_encode($item_types)); ?>">
             <button class="search-button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
