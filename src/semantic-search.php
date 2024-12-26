@@ -134,17 +134,20 @@ function openkbs_process_existing_posts($app, $only_unindexed = true) {
     // Add meta query if we only want unindexed posts
     if ($only_unindexed) {
         global $wpdb;
-        $posts = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT ID, post_title, post_content
-                FROM {$wpdb->posts}
-                WHERE post_status = 'publish'
-                AND (openkbs_embedding_model IS NULL OR openkbs_embedding_model = '')
-                AND post_type " . ($semantic_search['post_types_mode'] === 'all'
-                    ? "NOT IN ('revision', 'auto-draft')"
-                    : "IN ('" . implode("','", $semantic_search['post_types']) . "')")
-            )
+        $where_post_type = $semantic_search['post_types_mode'] === 'all'
+            ? "NOT IN ('revision', 'auto-draft')"
+            : "IN (" . implode(',', array_fill(0, count($semantic_search['post_types']), '%s')) . ")";
+
+        $query = $wpdb->prepare(
+            "SELECT ID, post_title, post_content
+            FROM {$wpdb->posts}
+            WHERE post_status = 'publish'
+            AND (openkbs_embedding_model IS NULL OR openkbs_embedding_model = '')
+            AND post_type " . $where_post_type,
+            $semantic_search['post_types_mode'] === 'all' ? [] : $semantic_search['post_types']
         );
+
+        $posts = $wpdb->get_results($query);
     } else {
         $posts = get_posts($args);
     }
