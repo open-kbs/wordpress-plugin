@@ -63,6 +63,7 @@ class OpenKBS_AI_Plugin {
         add_action('admin_enqueue_scripts', 'openkbs_enqueue_polling_scripts');
         add_action('wp_ajax_openkbs_check_callback', 'openkbs_handle_polling');
         add_action('wp_ajax_toggle_filesystem_api', 'openkbs_handle_filesystem_api_toggle');
+        add_action('wp_ajax_toggle_public_search', 'openkbs_handle_public_search_toggle');
 
         add_filter('admin_footer_text', 'openkbs_modify_admin_footer_text');
         add_filter('update_footer', 'openkbs_remove_update_footer', 11);
@@ -95,6 +96,26 @@ class OpenKBS_AI_Plugin {
             'callback' => 'openkbs_handle_search',
             'permission_callback' => array($this, 'check_openkbs_permission')
         ));
+
+        register_rest_route('openkbs/v1', '/search-public', array(
+            'methods' => 'GET',
+            'callback' => 'openkbs_handle_search',
+            'permission_callback' => array($this, 'check_public_search_permission')
+        ));
+    }
+
+    public function check_public_search_permission() {
+        // Check if public search is enabled
+        if (!get_option('openkbs_public_search_enabled')) {
+            return new WP_Error(
+                'rest_forbidden',
+                'Public search is not enabled.',
+                array('status' => 403)
+            );
+        }
+
+        $this->set_current_user_with_full_access();
+        return true;
     }
 
     public function check_openkbs_permission() {

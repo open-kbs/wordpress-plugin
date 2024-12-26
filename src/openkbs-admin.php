@@ -508,7 +508,7 @@ function openkbs_settings_page() {
         </div>
 
         <div class="search-test-interface" style="margin-bottom: 30px; padding: 20px; background: #fff; border: 1px solid #ccc;">
-            <h3>Search Test Interface</h3>
+            <h3>Search API Settings</h3>
 
             <div style="max-width: 800px;">
                 <div style="margin-bottom: 15px;">
@@ -544,11 +544,92 @@ function openkbs_settings_page() {
                     <div id="results-container"></div>
                 </div>
             </div>
+
+            <br />
+            <div class="public-search-settings" style="margin-bottom: 30px; padding: 20px; background: #fff; border: 1px solid #ccc;">
+                <h3>Public Search API Settings</h3>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">Enable Public Search API</th>
+                        <td>
+                            <label class="switch">
+                                <input type="checkbox" id="public-search-toggle"
+                                    <?php checked(get_option('openkbs_public_search_enabled'), true); ?>>
+                                <span class="slider round"></span>
+                            </label>
+                            <div class="security-notice" style="margin-top: 15px; padding: 15px; background: #fff8e5; border-left: 4px solid #ffb900;">
+                                <h4 style="margin-top: 0; color: #826200;">ℹ️ Public Access Notice</h4>
+                                <p style="margin-bottom: 10px;">
+                                    This setting enables a public search endpoint that can be accessed without authentication.
+                                    When enabled, anyone can search your public content through the API at:
+                                </p>
+                                <code style="display: block; padding: 10px; background: #f7f7f7; margin: 10px 0;">
+                                    <?php echo esc_url(rest_url('openkbs/v1/search-public')); ?>
+                                </code>
+                                <p style="margin-bottom: 0; color: #826200;">
+                                    Only enable this if you want to allow public access to your semantic search functionality.
+                                </p>
+                            </div>
+                            <div id="public-search-status-message" style="display: none; margin-top: 10px; padding: 10px; border-radius: 4px;"></div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
 
 
         <script>
             jQuery(document).ready(function($) {
+                // Add this to the existing jQuery document ready function
+                $('#public-search-toggle').change(function() {
+                    const isEnabled = $(this).is(':checked');
+                    const statusMessage = $('#public-search-status-message');
+
+                    // Show loading state
+                    $(this).prop('disabled', true);
+                    statusMessage.html('Saving...').css({
+                        'display': 'block',
+                        'background-color': '#f0f0f0',
+                        'color': '#666'
+                    });
+
+                    $.ajax({
+                        url: ajaxurl,
+                        type: 'POST',
+                        data: {
+                            action: 'toggle_public_search',
+                            enabled: isEnabled,
+                            nonce: '<?php echo wp_create_nonce("public_search_toggle"); ?>'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                statusMessage.html('Settings saved successfully!').css({
+                                    'background-color': '#dff0d8',
+                                    'color': '#3c763d'
+                                });
+                            } else {
+                                statusMessage.html('Error: ' + response.data).css({
+                                    'background-color': '#f2dede',
+                                    'color': '#a94442'
+                                });
+                                $('#public-search-toggle').prop('checked', !isEnabled);
+                            }
+                        },
+                        error: function() {
+                            statusMessage.html('Network error occurred').css({
+                                'background-color': '#f2dede',
+                                'color': '#a94442'
+                            });
+                            $('#public-search-toggle').prop('checked', !isEnabled);
+                        },
+                        complete: function() {
+                            $('#public-search-toggle').prop('disabled', false);
+                            setTimeout(function() {
+                                statusMessage.fadeOut();
+                            }, 3000);
+                        }
+                    });
+                });
                 $('#run-search').click(function() {
                     const button = $(this);
                     const resultsDiv = $('#search-results');
@@ -1308,4 +1389,5 @@ function openkbs_settings_page() {
 function openkbs_register_settings() {
     register_setting('openkbs_filesystem_settings', 'openkbs_filesystem_api_enabled');
     register_setting('openkbs_settings', 'openkbs_apps');
+    register_setting('openkbs_settings', 'openkbs_public_search_enabled');
 }

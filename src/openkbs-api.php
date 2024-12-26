@@ -499,3 +499,34 @@ function openkbs_get_first_image_from_post($content) {
     }
     return null;
 }
+
+function openkbs_handle_public_search_toggle() {
+    // Verify nonce
+    if (!check_ajax_referer('public_search_toggle', 'nonce', false)) {
+        wp_send_json_error('Invalid security token.');
+        return;
+    }
+
+    // Verify user permissions
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error('You do not have permission to change this setting.');
+        return;
+    }
+
+    // Get and validate the enabled parameter
+    $enabled = isset($_POST['enabled']) ? filter_var($_POST['enabled'], FILTER_VALIDATE_BOOLEAN) : false;
+
+    // Update the option
+    $updated = update_option('openkbs_public_search_enabled', $enabled);
+
+    if ($updated) {
+        wp_send_json_success([
+            'message' => $enabled
+                ? 'Public search API has been enabled.'
+                : 'Public search API has been disabled.',
+            'status' => $enabled ? 'enabled' : 'disabled'
+        ]);
+    } else {
+        wp_send_json_error('Failed to update setting.');
+    }
+}
