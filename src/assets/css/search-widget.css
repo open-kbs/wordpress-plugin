@@ -1,6 +1,7 @@
 .openkbs-search-widget {
     max-width: 800px;
     margin: 0 auto;
+    position: relative;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
@@ -37,9 +38,26 @@
     background: #135e96;
 }
 
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 5px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 15px;
+}
+
 .results-container {
     display: grid;
     gap: 20px;
+    max-height: calc(80vh - 60px);
+    overflow-y: auto;
 }
 
 .search-result-item {
@@ -64,7 +82,6 @@
     height: 120px;
     border-radius: 4px;
     object-fit: cover;
-    background: #f0f0f0;
 }
 
 .result-content {
@@ -72,14 +89,14 @@
 }
 
 .result-title {
-    margin: 0 0 8px 0;
+    margin: 0 0 8px;
     font-size: 18px;
     color: #1a1a1a;
     font-weight: 600;
 }
 
 .result-excerpt {
-    margin: 0 0 8px 0;
+    margin: 0 0 8px;
     color: #666;
     font-size: 14px;
     line-height: 1.5;
@@ -108,18 +125,64 @@
     width: 40px;
     height: 40px;
     border: 3px solid #f3f3f3;
-    border-top: 3px solid #2271b1;
+    border-top-color: #2271b1;
     border-radius: 50%;
     animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.search-results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.results-title {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+.close-results {
+    background: none;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    transition: background-color 0.2s ease;
+}
+
+.close-results:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.search-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 999;
+    display: none;
 }
 
 .no-results {
     text-align: center;
     padding: 20px;
     color: #666;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
