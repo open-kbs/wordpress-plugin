@@ -487,7 +487,7 @@ function openkbs_settings_page() {
                             url: ajaxurl,
                             type: 'POST',
                             data: {
-                                action: 'get_default_field_function',
+                                action: 'get_default_config_function',
                             },
                             success: function(response) {
                                 if (response.success) {
@@ -879,7 +879,7 @@ function openkbs_register_settings() {
     register_setting('openkbs_settings', 'openkbs_public_search_enabled');
 }
 
-function openkbs_get_default_field_function() {
+function openkbs_get_default_config_function() {
     return file_get_contents(plugin_dir_path(__FILE__) . '../templates/default-get-config.php');
 }
 

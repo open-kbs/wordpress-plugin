@@ -532,13 +532,14 @@ function openkbs_handle_public_search_toggle() {
 }
 
 function create_openkbs_get_config($app) {
-    $code = $app['public_chat']['openkbs_get_config'];
+    $code = wp_unslash($app['public_chat']['openkbs_get_config']);
+    $code = preg_replace('/^<\?(php)?\s+/', '', $code);
     eval($code);
     return 'openkbs_get_config';
 }
 
 function openkbs_create_public_chat_token($app) {
-    $chat_config = create_openkbs_get_config($app);
+    $chat_config = create_openkbs_get_config($app)();
     $body = array(
         'action' => 'createPublicChatToken',
         'apiKey' => $app['apiKey'],
@@ -561,4 +562,16 @@ function openkbs_create_public_chat_token($app) {
     );
 
     $response = wp_remote_post('https://chat.openkbs.com/', $args);
+}
+
+
+function openkbs_ajax_create_public_chat_token() {
+    if (!isset($_POST['app'])) {
+        wp_send_json_error('No app data provided');
+        return;
+    }
+
+    $app = $_POST['app'];
+    $result = openkbs_create_public_chat_token($app);
+    wp_send_json_success($result);
 }
