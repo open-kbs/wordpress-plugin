@@ -261,11 +261,23 @@ function openkbs_base64_url_encode($data) {
     return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
 }
 
-function openkbs_generate_txn_id() {
+function generate_unique_id() {
     return sprintf('%d-%d',
         round(microtime(true) * 1000),
         rand(100000, 999999)
     );
+}
+
+function openkbs_generate_txn_id() {
+    return generate_unique_id();
+}
+
+function openkbs_generate_chat_id() {
+    return generate_unique_id();
+}
+
+function openkbs_generate_msg_id() {
+    return generate_unique_id();
 }
 
 function openkbs_create_account_id($publicKeyBase64) {

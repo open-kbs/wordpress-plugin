@@ -65,8 +65,10 @@ class OpenKBS_AI_Plugin {
         add_action('wp_ajax_openkbs_check_callback', 'openkbs_handle_polling');
         add_action('wp_ajax_toggle_filesystem_api', 'openkbs_handle_filesystem_api_toggle');
         add_action('wp_ajax_toggle_public_search', 'openkbs_handle_public_search_toggle');
+        add_action('wp_ajax_get_default_field_function', function() {
+            wp_send_json_success(openkbs_get_default_field_function());
+        });
         add_shortcode('openkbs_search', array($this, 'render_search_widget'));
-
 
         add_filter('admin_footer_text', 'openkbs_modify_admin_footer_text');
         add_filter('update_footer', 'openkbs_remove_update_footer', 11);

@@ -530,3 +530,35 @@ function openkbs_handle_public_search_toggle() {
         wp_send_json_error('Failed to update setting.');
     }
 }
+
+function create_openkbs_get_config($app) {
+    $code = $app['public_chat']['openkbs_get_config'];
+    eval($code);
+    return 'openkbs_get_config';
+}
+
+function openkbs_create_public_chat_token($app) {
+    $chat_config = create_openkbs_get_config($app);
+    $body = array(
+        'action' => 'createPublicChatToken',
+        'apiKey' => $app['apiKey'],
+        'title' => $chat_config['chatTitle'],
+        'variables' => $chat_config['variables'],
+        'maxMessages' => $chat_config['maxMessages'],
+        'maxTokens' => $chat_config['maxTokens'],
+        'tokenExpiration' => $chat_config['tokenExpiration']
+    );
+
+    if (isset($chat_config['hello_msg'])) {
+        $body['messages'] = array('msgId' => openkbs_generate_msg_id(), 'role' => 'assistant', 'content' => $chat_config['hello_msg']);
+    }
+
+    $args = array(
+        'body' => json_encode($body),
+        'headers' => array(
+            'Content-Type' => 'application/json'
+        ),
+    );
+
+    $response = wp_remote_post('https://chat.openkbs.com/', $args);
+}

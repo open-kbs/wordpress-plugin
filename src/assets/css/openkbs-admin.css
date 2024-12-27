@@ -279,3 +279,65 @@ input:checked + .slider:before {
 .nav-tab-wrapper {
     margin-bottom: 20px;
 }
+
+/* Public Chat Editor Styles */
+.public-chat-editor-section {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.public-chat-editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.public-chat-editor-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.reset-code-editor {
+    display: inline-flex !important;
+    align-items: center;
+}
+
+.code-editor-container {
+    margin-top: 15px;
+    border: 1px solid #e2e4e7;
+    border-radius: 2px;
+}
+
+/* CodeMirror Customizations */
+.CodeMirror {
+    height: auto !important;
+    min-height: 300px;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 12px;
+}
+
+.CodeMirror-gutters {
+    border-right: 1px solid #e2e4e7;
+    background: #f7f7f7;
+}
+
+.CodeMirror-linenumber {
+    color: #666;
+}
+
+/* Theme Overrides */
+.cm-s-default .cm-keyword {color: #07a;}
+.cm-s-default .cm-comment {color: #690;}
+.cm-s-default .cm-string {color: #a11;}
+.cm-s-default .cm-variable {color: #555;}
+.cm-s-default .cm-variable-2 {color: #05a;}
+.cm-s-default .cm-def {color: #00f;}
+.cm-s-default .cm-operator {color: #555;}
+.cm-s-default .cm-number {color: #905;}

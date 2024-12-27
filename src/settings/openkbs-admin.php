@@ -54,6 +54,10 @@ function openkbs_add_admin_menu() {
 }
 
 function openkbs_settings_page() {
+    wp_enqueue_code_editor(['type' => 'text/x-php']);
+    wp_enqueue_script('wp-theme-plugin-editor');
+    wp_enqueue_style('wp-codemirror');
+
     $apps = openkbs_get_apps();
     $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'general';
 
@@ -241,6 +245,41 @@ function openkbs_settings_page() {
                     </tr>
 
                     <tr>
+                        <th scope="row">Public Chat</th>
+                        <td>
+                            <label class="switch">
+                                <input type="checkbox"
+                                       name="openkbs_apps[<?php echo $app_id; ?>][public_chat][enabled]"
+                                       class="public-chat-toggle"
+                                       <?php checked(isset($app['public_chat']['enabled']) && $app['public_chat']['enabled'], true); ?>>
+                                <span class="slider round"></span>
+                            </label>
+
+                            <div class="public-chat-settings" style="margin-top: 15px; display: <?php echo (isset($app['public_chat']['enabled']) && $app['public_chat']['enabled']) ? 'block' : 'none'; ?>;">
+                                <div class="public-chat-editor-section">
+                                    <div class="public-chat-editor-header">
+                                        <h3 class="public-chat-editor-title">Chat Session Config</h3>
+                                        <button type="button" class="button reset-code-editor" data-app-id="<?php echo $app_id; ?>">
+                                            <span class="dashicons dashicons-image-rotate" style="margin: 3px 5px 0 -2px;"></span>
+                                            Reset to Default
+                                        </button>
+                                    </div>
+                                    <p class="description">Customize the function that returns dynamic field values for the chat session.</p>
+
+                                    <div class="code-editor-container">
+                                        <textarea id="openkbs-code-editor-<?php echo $app_id; ?>"
+                                                  name="openkbs_apps[<?php echo $app_id; ?>][public_chat][openkbs_get_config]"
+                                                  class="code-editor"><?php
+                                            echo isset($app['public_chat']['openkbs_get_config'])
+                                                ? esc_textarea($app['public_chat']['openkbs_get_config'])
+                                                : esc_textarea(openkbs_get_default_field_function());
+                                        ?></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
                         <th scope="row">Subscribe to Events</th>
                         <td>
                             <div class="search-box" style="margin-bottom: 10px; max-width: 600px;">
@@ -381,7 +420,89 @@ function openkbs_settings_page() {
 
         <script>
             jQuery(document).ready(function($) {
-                // Indexing functionality
+                $('.public-chat-toggle').each(function() {
+                    const toggle = $(this);
+                    const settingsSection = toggle.closest('td').find('.public-chat-settings');
+                    const appId = toggle.closest('.app-settings').find('.embedding-model-select').data('app-id');
+
+                    // Initialize CodeMirror with enhanced settings
+                    const editorTextarea = document.getElementById('openkbs-code-editor-' + appId);
+                    if (editorTextarea) {
+                        const editorSettings = wp.codeEditor.defaultSettings ? _.clone(wp.codeEditor.defaultSettings) : {};
+                        editorSettings.codemirror = _.extend(
+                            {},
+                            editorSettings.codemirror,
+                            {
+                                mode: 'php',
+                                lineNumbers: true,
+                                lineWrapping: true,
+                                autoCloseBrackets: true,
+                                matchBrackets: true,
+                                indentUnit: 4,
+                                indentWithTabs: false,
+                                extraKeys: {
+                                    "Tab": "indentMore",
+                                    "Shift-Tab": "indentLess",
+                                },
+                                theme: 'default',
+                                styleActiveLine: true,
+                                matchBrackets: true,
+                                autoCloseBrackets: true,
+                                foldGutter: true,
+                                gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+                                foldOptions: {
+                                    widget: "...",
+                                    minFoldSize: 3
+                                }
+                            }
+                        );
+
+                        const editor = wp.codeEditor.initialize(editorTextarea, editorSettings);
+
+                        // Store editor instance for reset functionality
+                        window.openkbsEditors = window.openkbsEditors || {};
+                        window.openkbsEditors[appId] = editor;
+
+                        // Handle toggle
+                        toggle.change(function() {
+                            if ($(this).is(':checked')) {
+                                settingsSection.slideDown(300, function() {
+                                    editor.codemirror.refresh();
+                                });
+                            } else {
+                                settingsSection.slideUp(300);
+                            }
+                        });
+                    }
+                });
+
+                // Handle reset button click
+                $('.reset-code-editor').click(function() {
+                    const appId = $(this).data('app-id');
+                    const editor = window.openkbsEditors[appId];
+
+                    if (confirm('Are you sure you want to reset the function to its default state? This will overwrite any changes you have made.')) {
+                        // Get default template via AJAX
+                        $.ajax({
+                            url: ajaxurl,
+                            type: 'POST',
+                            data: {
+                                action: 'get_default_field_function',
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    editor.codemirror.setValue(response.data);
+                                } else {
+                                    alert('Error loading default template');
+                                }
+                            },
+                            error: function() {
+                                alert('Error loading default template');
+                            }
+                        });
+                    }
+                });
+
                 $('.index-posts-button').click(function() {
                     const button = $(this);
                     const appId = button.data('app-id');
@@ -757,3 +878,8 @@ function openkbs_register_settings() {
     register_setting('openkbs_settings', 'openkbs_apps');
     register_setting('openkbs_settings', 'openkbs_public_search_enabled');
 }
+
+function openkbs_get_default_field_function() {
+    return file_get_contents(plugin_dir_path(__FILE__) . '../templates/default-get-config.php');
+}
+
