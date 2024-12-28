@@ -5,7 +5,6 @@ jQuery(document).ready(function($) {
 
     chatToggle.on('click', function() {
         if (!chatInitialized) {
-            // Use openkbsChat.ajaxurl instead of ajaxurl
             $.ajax({
                 url: openkbsChat.ajaxurl,
                 type: 'POST',
@@ -14,16 +13,32 @@ jQuery(document).ready(function($) {
                     app: openkbsChat.app
                 },
                 success: function(response) {
-                    console.log('Chat token response:', response);
-                    const chatId = response.chatId;
-                    const kbId = response.kbId;
-                    const publicChatToken = response.token;
-                    // http://{kbId}.apps.openkbs.com/chat/{chatId}?publicChatToken={publicChatToken}
-                    // http://{kbId}.apps.localhost:3000/chat/{chatId}
-                    chatInitialized = true;
+                    if (response.success && response.data) {
+                        const chatId = response.data.chatId;
+                        const kbId = response.data.kbId;
+                        const publicChatToken = response.data.token;
+
+                        // Create the chat URL
+                        // const chatUrl = `https://${kbId}.apps.openkbs.com/chat/${chatId}?publicChatToken=${publicChatToken}`;
+                        const chatUrl = `http://${kbId}.apps.localhost:3000/chat/${chatId}?publicChatToken=${publicChatToken}`;
+
+                        // Create and append the iframe
+                        const iframe = $('<iframe>', {
+                            src: chatUrl,
+                            id: 'openkbs-chat-iframe',
+                            frameborder: '0',
+                            style: 'width: 100%; height: 100%; border-radius: 10px;'
+                        });
+
+                        chatContainer.empty().append(iframe);
+                        chatInitialized = true;
+                    } else {
+                        console.error('Invalid response format:', response);
+                    }
                 },
                 error: function(error) {
                     console.error('Error creating chat token:', error);
+                    chatContainer.html('<div class="chat-error">Failed to initialize chat. Please try again later.</div>');
                 }
             });
         }
