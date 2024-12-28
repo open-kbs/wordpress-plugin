@@ -1,15 +1,19 @@
 jQuery(document).ready(function($) {
+    // DOM elements
     const chatToggle = $('#openkbs-chat-toggle');
     const chatContainer = $('#openkbs-chat-container');
+    const chatSessionClose = $('#chat-session-close');
     let chatInitialized = false;
 
-    // Check localStorage for saved state on page load
+    // Initialize on page load
     const isChatOpen = localStorage.getItem('openkbsChatOpen') === 'true';
     if (isChatOpen) {
         chatContainer.show();
         initializeChat();
     }
+    updateCloseButtonVisibility();
 
+    // Event Listeners
     chatToggle.on('click', function() {
         const isVisible = chatContainer.is(':visible');
         localStorage.setItem('openkbsChatOpen', !isVisible);
@@ -20,6 +24,48 @@ jQuery(document).ready(function($) {
         chatContainer.slideToggle();
     });
 
+    chatSessionClose.on('click', function(e) {
+        e.stopPropagation(); // Prevent triggering chat toggle
+
+        if (confirm('Are you sure you want to end this chat session?')) {
+            clearChatSession();
+            chatContainer.hide();
+            chatInitialized = false;
+            updateCloseButtonVisibility();
+            chatContainer.empty();
+        }
+    });
+
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && localStorage.getItem('openkbsChatOpen') === 'true' && !chatInitialized) {
+            initializeChat();
+        }
+    });
+
+    // Hover effects
+    chatToggle.hover(
+        function() {
+            if (localStorage.getItem('openkbsChatSession')) {
+                chatSessionClose.css('opacity', '1');
+            }
+        },
+        function() {
+            if (!chatSessionClose.is(':hover')) {
+                chatSessionClose.css('opacity', '');
+            }
+        }
+    );
+
+    chatSessionClose.hover(
+        function() {
+            $(this).css('opacity', '1');
+        },
+        function() {
+            $(this).css('opacity', '');
+        }
+    );
+
+    // Core Functions
     function createChatIframe(chatId, kbId, publicChatToken) {
         // const chatUrl = `https://${kbId}.apps.openkbs.com/chat/${chatId}?publicChatToken=${publicChatToken}`;
         const chatUrl = `http://${kbId}.apps.localhost:3000/chat/${chatId}?publicChatToken=${publicChatToken}`;
@@ -36,15 +82,13 @@ jQuery(document).ready(function($) {
     }
 
     function initializeChat() {
-        // Check if we have an existing chat session
         const existingSession = localStorage.getItem('openkbsChatSession');
 
         if (existingSession) {
-            // Reuse existing session
             const session = JSON.parse(existingSession);
             createChatIframe(session.chatId, session.kbId, session.publicChatToken);
+            updateCloseButtonVisibility();
         } else {
-            // Create new chat session
             $.ajax({
                 url: openkbsChat.ajaxurl,
                 type: 'POST',
@@ -58,12 +102,13 @@ jQuery(document).ready(function($) {
 
                         createChatIframe(chatId, kbId, publicChatToken);
 
-                        // Store chat session data
                         localStorage.setItem('openkbsChatSession', JSON.stringify({
                             chatId,
                             kbId,
                             publicChatToken
                         }));
+
+                        updateCloseButtonVisibility();
                     } else {
                         console.error('Invalid response format:', response);
                     }
@@ -76,18 +121,20 @@ jQuery(document).ready(function($) {
         }
     }
 
-    // Handle page visibility changes
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden && localStorage.getItem('openkbsChatOpen') === 'true' && !chatInitialized) {
-            initializeChat();
+    function updateCloseButtonVisibility() {
+        const existingSession = localStorage.getItem('openkbsChatSession');
+        if (existingSession) {
+            chatSessionClose.addClass('visible');
+        } else {
+            chatSessionClose.removeClass('visible');
         }
-    });
+    }
 
-    // Optional: Function to clear chat session when needed
     function clearChatSession() {
         localStorage.removeItem('openkbsChatOpen');
         localStorage.removeItem('openkbsChatSession');
         chatInitialized = false;
+        updateCloseButtonVisibility();
     }
 
     // Optional: Handle token expiration
