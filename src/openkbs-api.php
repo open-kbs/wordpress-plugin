@@ -543,7 +543,8 @@ function openkbs_create_public_chat_token($app) {
     $body = array(
         'action' => 'createPublicChatToken',
         'apiKey' => $app['apiKey'],
-        'title' => $chat_config['chatTitle'],
+        'kbId' => $app['kbId'],
+        'title' => openkbs_encrypt_kb_item($chat_config['chatTitle'], $app['AESKey']),
         'variables' => $chat_config['variables'],
         'maxMessages' => $chat_config['maxMessages'],
         'maxTokens' => $chat_config['maxTokens'],
@@ -551,7 +552,13 @@ function openkbs_create_public_chat_token($app) {
     );
 
     if (isset($chat_config['hello_msg'])) {
-        $body['messages'] = array('msgId' => openkbs_generate_msg_id(), 'role' => 'assistant', 'content' => $chat_config['hello_msg']);
+        $body['messages'] = array(
+            array(
+                'msgId' => openkbs_generate_msg_id(),
+                'role' => 'assistant',
+                'content' => $chat_config['hello_msg']
+            )
+        );
     }
 
     $args = array(
@@ -562,6 +569,10 @@ function openkbs_create_public_chat_token($app) {
     );
 
     $response = wp_remote_post('https://chat.openkbs.com/', $args);
+
+    $body = wp_remote_retrieve_body($response);
+    $result = json_decode($body, true);
+    return $result[0]['data'];
 }
 
 

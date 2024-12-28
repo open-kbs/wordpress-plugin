@@ -1,4 +1,3 @@
-// src/chat-widget.php
 <?php
 
 function openkbs_render_chat_widget() {
