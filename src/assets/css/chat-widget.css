@@ -98,3 +98,15 @@
 .chat-session-close.visible {
     animation: popIn 0.3s ease forwards;
 }
+
+/* Mobile styles */
+@media screen and (max-width: 768px) {
+    .openkbs-chat-container {
+        width: 100%;
+        height: calc(100vh - 200px);
+        bottom: 100px;
+        right: 0;
+        left: 0;
+        border-radius: 0;
+    }
+}
