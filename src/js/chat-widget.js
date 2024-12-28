@@ -15,6 +15,11 @@ jQuery(document).ready(function($) {
                 },
                 success: function(response) {
                     console.log('Chat token response:', response);
+                    const chatId = response.chatId;
+                    const kbId = response.kbId;
+                    const publicChatToken = response.token;
+                    // http://{kbId}.apps.openkbs.com/chat/{chatId}?publicChatToken={publicChatToken}
+                    // http://{kbId}.apps.localhost:3000/chat/{chatId}
                     chatInitialized = true;
                 },
                 error: function(error) {
