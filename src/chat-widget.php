@@ -100,7 +100,7 @@ function openkbs_render_chat_widget() {
         <button id="openkbs-chat-toggle" class="openkbs-chat-toggle">
             <span class="chat-icon">💬</span>
         </button>
-        <div id="openkbs-chat-container" class="openkbs-chat-container" style="display: none;">
+        <div id="openkbs-chat-container" class="openkbs-chat-container">
             <!-- Chat interface will be initialized here -->
         </div>
     </div>
