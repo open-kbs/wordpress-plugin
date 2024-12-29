@@ -245,7 +245,7 @@ function openkbs_settings_page() {
                     </tr>
 
                     <tr>
-                        <th scope="row">Public Chat</th>
+                        <th scope="row">Website Chat Widget</th>
                         <td>
                             <label class="switch">
                                 <input type="checkbox"
@@ -255,11 +255,20 @@ function openkbs_settings_page() {
                                 <span class="slider round"></span>
                             </label>
 
-                            <span class="notice-text" style="margin-left: 10px;">
-                                <span class="dashicons dashicons-warning" style="font-size: 18px; vertical-align: middle;"></span>
-                                <strong>Public Access Notice:</strong> Enabling allows unauthenticated users to interact with this AI Agent and access all of its commands.
-                                You are responsible for monitoring usage, costs and access controls.
-                            </span>
+                            <div class="security-notice" style="margin-top: 15px; padding: 15px; background: #fff8e5; border-left: 4px solid #ffb900;">
+                                <h4 style="margin-top: 0; color: #826200;">ℹ️ Public Access Notice</h4>
+                                <p style="margin-bottom: 10px;">
+                                    Enabling this option allows unauthenticated users to interact with this AI Agent and all of its commands.
+                                </p>
+                                <ul style="list-style-type: disc; margin-left: 20px; margin-bottom: 15px;">
+                                    <li>You are fully responsible for all usage and associated costs</li>
+                                    <li>Review agent capabilities and available commands before enabling</li>
+                                    <li>Implement appropriate access controls if needed</li>
+                                </ul>
+                                <p style="margin-bottom: 0; color: #826200;">
+                                    🔒 Consider enabling only when public access is specifically required for your use case.
+                                </p>
+                            </div>
 
                             <div class="public-chat-settings" style="margin-top: 15px; display: <?php echo (isset($app['public_chat']['enabled']) && $app['public_chat']['enabled']) ? 'block' : 'none'; ?>;">
                                 <div class="public-chat-editor-section">
