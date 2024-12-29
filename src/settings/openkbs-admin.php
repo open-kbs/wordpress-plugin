@@ -883,6 +883,42 @@ function openkbs_settings_page() {
                 });
             }
         });
+
+        jQuery(document).ready(function($) {
+            let hasUnsavedChanges = false;
+
+            // Track changes on all form inputs
+            $('form input, form select, form textarea').on('change', function() {
+                hasUnsavedChanges = true;
+                showUnsavedChangesNotice();
+            });
+
+            // Add notice container after the form
+            $('form').append('<div id="unsaved-changes-notice" style="display: none;" class="notice notice-warning is-dismissible"><p><strong>You have unsaved changes!</strong> Don\'t forget to click the "Save All" button to apply your changes.</p></div>');
+
+            function showUnsavedChangesNotice() {
+                $('#unsaved-changes-notice').slideDown();
+
+                // Highlight save buttons
+                $('input[type="submit"]').addClass('button-primary-highlight').css({
+                    'animation': 'pulse 2s infinite',
+                    'box-shadow': '0 0 0 0 rgba(51, 122, 183, 1)'
+                });
+            }
+
+            // Clear notice when form is submitted
+            $('form').on('submit', function() {
+                hasUnsavedChanges = false;
+                $('#unsaved-changes-notice').slideUp();
+            });
+
+            // Warn user when leaving page with unsaved changes
+            $(window).on('beforeunload', function() {
+                if (hasUnsavedChanges) {
+                    return 'You have unsaved changes. Are you sure you want to leave?';
+                }
+            });
+        });
     });
     </script>
     <?php

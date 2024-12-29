@@ -348,3 +348,47 @@ input:checked + .slider:before {
 .cm-s-default .cm-def {color: #00f;}
 .cm-s-default .cm-operator {color: #555;}
 .cm-s-default .cm-number {color: #905;}
+
+/* Add these styles to your existing CSS */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(51, 122, 183, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(51, 122, 183, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(51, 122, 183, 0);
+    }
+}
+
+.button-primary-highlight {
+    position: relative;
+    background: #2271b1 !important;
+    border-color: #2271b1 !important;
+    color: #fff !important;
+}
+
+#unsaved-changes-notice {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 300px;
+    padding: 10px 15px;
+    border-left: 4px solid #ffba00;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
