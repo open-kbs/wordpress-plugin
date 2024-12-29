@@ -20,12 +20,12 @@ function openkbs_create_public_chat_token($app) {
         'tokenExpiration' => $chat_config['tokenExpiration']
     );
 
-    if (isset($chat_config['hello_msg'])) {
+    if (isset($chat_config['helloMessage'])) {
         $body['messages'] = array(
             array(
                 'msgId' => openkbs_generate_msg_id(),
                 'role' => 'assistant',
-                'content' => $chat_config['hello_msg']
+                'content' => $chat_config['helloMessage']
             )
         );
     }

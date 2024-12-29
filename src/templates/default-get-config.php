@@ -16,18 +16,17 @@ function openkbs_get_config() {
 
     return [
         'chatTitle' => 'Chat with ' . $user_name,
-
         'variables' => [
-            'wordpress_user' => $user_name,
-            'wordpress_user_id' => $user_id,
-            'wordpress_user_email' => $is_logged_in ? $current_user->user_email : '',
-            'wordpress_site_language' => get_locale(),
+            'publicUserName'  => $user_name,
+            'publicUserId'  => $user_id,
+            'publicUserEmail'  => $is_logged_in ? $current_user->user_email : '',
+            'wordpressSiteLanguage' => get_locale(),
         ],
 
         'maxMessages' => $is_logged_in ? 50 : 20, // maxMessages per chat
         'maxTokens' => $is_logged_in ? 64000 : 8000, // max LLM tokens per chat
         'tokenExpiration' => 1000 * 60 * 60, // one hour chat time
-        'hello_msg' => $is_logged_in
+        'helloMessage' => $is_logged_in
             ? "Welcome {$user_name}! How can I assist you today?"
             : "Welcome! How can I assist you today?"
     ];

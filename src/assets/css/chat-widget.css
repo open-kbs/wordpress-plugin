@@ -63,7 +63,7 @@
     right: -4px;
     width: 16px;
     height: 16px;
-    background: #ff4444;
+    background: #ff7c7c;
     border-radius: 50%;
     border: 2px solid white;
     color: white;
@@ -79,7 +79,7 @@
 }
 
 .chat-session-close:hover {
-    background: #ff0000;
+    background: #ff6b6b;
     transform: scale(1.1);
 }
 
