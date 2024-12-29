@@ -17,7 +17,6 @@ jQuery(document).ready(function($) {
     chatToggle.on('click', function() {
         const isVisible = chatContainer.is(':visible');
         localStorage.setItem('openkbsChatOpen', !isVisible);
-
         if (!chatInitialized && !isVisible) {
             initializeChat();
         }
@@ -67,8 +66,8 @@ jQuery(document).ready(function($) {
 
     // Core Functions
     function createChatIframe(chatId, kbId, publicChatToken) {
-        // const chatUrl = `https://${kbId}.apps.openkbs.com/chat/${chatId}?publicChatToken=${publicChatToken}`;
-        const chatUrl = `http://${kbId}.apps.localhost:3000/chat/${chatId}?publicChatToken=${publicChatToken}`;
+        // const chatUrl = `https://${encodeURIComponent(kbId)}.apps.openkbs.com/chat/${encodeURIComponent(chatId)}?publicChatToken=${encodeURIComponent(publicChatToken)}`;
+        const chatUrl = `http://${encodeURIComponent(kbId)}.apps.localhost:3000/chat/${encodeURIComponent(chatId)}?publicChatToken=${encodeURIComponent(publicChatToken)}`;
 
         const iframe = $('<iframe>', {
             src: chatUrl,
@@ -83,7 +82,6 @@ jQuery(document).ready(function($) {
 
     function initializeChat() {
         const existingSession = localStorage.getItem('openkbsChatSession');
-
         if (existingSession) {
             const session = JSON.parse(existingSession);
             createChatIframe(session.chatId, session.kbId, session.publicChatToken);

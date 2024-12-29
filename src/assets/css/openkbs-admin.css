@@ -332,6 +332,13 @@ input:checked + .slider:before {
     color: #666;
 }
 
+.notice.notice-warning {
+    background: #fff8e5;
+    border-left: 4px solid #dba617;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    padding: 1px 12px;
+}
+
 /* Theme Overrides */
 .cm-s-default .cm-keyword {color: #07a;}
 .cm-s-default .cm-comment {color: #690;}

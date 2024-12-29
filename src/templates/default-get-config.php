@@ -15,7 +15,7 @@ function openkbs_get_config() {
     $user_id = $is_logged_in ? $current_user->ID : 0;
 
     return [
-        'chatTitle' => 'Chat with ' . $user_name,
+        'chatTitle' => 'userId:' . $user_id . ' (' . $user_name . ')',
         'variables' => [
             'publicUserName'  => $user_name,
             'publicUserId'  => $user_id,

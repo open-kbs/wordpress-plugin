@@ -255,6 +255,12 @@ function openkbs_settings_page() {
                                 <span class="slider round"></span>
                             </label>
 
+                            <span class="notice-text" style="margin-left: 10px;">
+                                <span class="dashicons dashicons-warning" style="font-size: 18px; vertical-align: middle;"></span>
+                                <strong>Public Access Notice:</strong> Enabling allows unauthenticated users to interact with this AI Agent and access all of its commands.
+                                You are responsible for monitoring usage, costs and access controls.
+                            </span>
+
                             <div class="public-chat-settings" style="margin-top: 15px; display: <?php echo (isset($app['public_chat']['enabled']) && $app['public_chat']['enabled']) ? 'block' : 'none'; ?>;">
                                 <div class="public-chat-editor-section">
                                     <div class="public-chat-editor-header">
@@ -264,7 +270,7 @@ function openkbs_settings_page() {
                                             Reset to Default
                                         </button>
                                     </div>
-                                    <p class="description">Customize the function that returns dynamic field values for the chat session.</p>
+                                    <p class="description">Customize the function that returns the signed chat session.</p>
 
                                     <div class="code-editor-container">
                                         <textarea id="openkbs-code-editor-<?php echo $app_id; ?>"
