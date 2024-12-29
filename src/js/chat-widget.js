@@ -140,4 +140,129 @@ jQuery(document).ready(function($) {
         clearChatSession();
         initializeChat();
     }
+
+    // Whitelist of allowed origins (adjust based on your deployment)
+    const ALLOWED_ORIGINS = [
+        'https://*.apps.openkbs.com',
+        'http://*.apps.localhost:3000'
+    ];
+
+    // Add more commands here
+    const commandHandlers = {
+        // Navigate to a different page
+        navigate: (data) => {
+            if (data.url && isUrlSafe(data.url)) {
+                window.location.href = data.url;
+            }
+        },
+
+        // Scroll to element
+        scrollTo: (data) => {
+            const element = $(data.selector);
+            if (element.length) {
+                $('html, body').animate({
+                    scrollTop: element.offset().top - (data.offset || 0)
+                }, 800);
+            }
+        },
+
+        // Trigger click on element
+        click: (data) => {
+            if (isValidSelector(data.selector)) {
+                $(data.selector).trigger('click');
+            }
+        },
+
+        // Set form field values
+        setFormValue: (data) => {
+            if (isValidSelector(data.selector)) {
+                $(data.selector).val(data.value);
+            }
+        },
+
+        // Execute custom function
+        executeFunction: (data) => {
+            if (window[data.functionName] && typeof window[data.functionName] === 'function') {
+                window[data.functionName].apply(null, data.args || []);
+            }
+        }
+    };
+
+    // Message event listener
+    window.addEventListener('message', function(event) {
+
+        // Verify origin
+        if (!isAllowedOrigin(event.origin)) {
+            console.warn('Message received from unauthorized origin:', event.origin);
+            return;
+        }
+
+        // Verify message format
+        if (!event.data || !event.data.type || !event.data.command) {
+            return;
+        }
+
+        // Verify message type
+        if (event.data.type !== 'openkbsCommand') {
+            return;
+        }
+
+        // Verify chat session
+        const chatSession = localStorage.getItem('openkbsChatSession');
+
+        if (!chatSession) {
+            return;
+        }
+
+        const session = JSON.parse(chatSession);
+        if (event.data.kbId !== session.kbId) {
+            return;
+        }
+
+        // Execute command
+        try {
+            const handler = commandHandlers[event.data.command];
+            if (handler) {
+                handler(event.data);
+            }
+        } catch (error) {
+            console.error('Error executing command:', error);
+        }
+    });
+
+    // Helper functions
+    function isAllowedOrigin(origin) {
+        return ALLOWED_ORIGINS.some(allowed => {
+            const regex = new RegExp('^' + allowed.replace(/\./g, '\\.').replace(/\*/g, '[^.]+') + '$');
+            return regex.test(origin);
+        });
+    }
+
+    function isUrlSafe(url) {
+        try {
+            // Handle relative paths
+            if (url.startsWith('/')) {
+                return true;
+            }
+
+            // Check absolute URLs
+            const parsed = new URL(url);
+            const current = new URL(window.location.href);
+
+            // Only allow URLs from the same origin
+            return (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
+                (parsed.hostname === current.hostname);
+        } catch {
+            return false;
+        }
+    }
+
+    function isValidSelector(selector) {
+        try {
+            document.querySelector(selector);
+            return true;
+        } catch {
+            return false;
+        }
+    }
 });

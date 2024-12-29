@@ -279,7 +279,7 @@ function openkbs_settings_page() {
                                             Reset to Default
                                         </button>
                                     </div>
-                                    <p class="description">Customize the function that returns the signed chat session.</p>
+                                    <p class="description">Customize the function that signs chat sessions for your users</p>
 
                                     <div class="code-editor-container">
                                         <textarea id="openkbs-code-editor-<?php echo $app_id; ?>"
