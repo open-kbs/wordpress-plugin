@@ -687,6 +687,7 @@ function openkbs_settings_page() {
 
             container.find('.selected-types-list').append(newItem);
             input.val('');
+            showUnsavedChangesNotice();
         });
 
         // Handle post type removal
@@ -927,7 +928,7 @@ function openkbs_settings_page() {
 function openkbs_register_settings() {
     register_setting('openkbs_filesystem_settings', 'openkbs_filesystem_api_enabled');
     register_setting('openkbs_settings', 'openkbs_apps');
-    register_setting('openkbs_settings', 'openkbs_public_search_enabled');
+    register_setting('openkbs_search_settings', 'openkbs_public_search_enabled');
 }
 
 function openkbs_get_default_config_function() {
