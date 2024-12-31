@@ -394,52 +394,76 @@ function openkbs_handle_search(WP_REST_Request $request) {
 
         global $wpdb;
         $post_type_placeholders = implode(',', array_fill(0, count($post_types), '%s'));
-        $query = $wpdb->prepare(
-            "SELECT ID, post_title, post_content, post_excerpt, post_type, openkbs_embedding
-            FROM {$wpdb->posts}
-            WHERE post_type IN ($post_type_placeholders)
-            AND post_status = 'publish'
-            AND openkbs_embedding IS NOT NULL",
-            $post_types
-        );
 
-        $posts = $wpdb->get_results($query);
+        $chunk_size = 500;
+        $offset = 0;
+        $top_results = [];
+        $min_similarity_threshold = -1;
 
-        $results = [];
-        foreach ($posts as $post) {
-            $post_embedding = json_decode($post->openkbs_embedding, true);
-            if ($post_embedding) {
-                $similarity = openkbs_cosine_similarity($query_embedding, $post_embedding);
+        do {
+            // Query with LIMIT and OFFSET for chunking
+            $query = $wpdb->prepare(
+                "SELECT ID, post_title, post_content, post_excerpt, post_type, openkbs_embedding
+                FROM {$wpdb->posts}
+                WHERE post_type IN ($post_type_placeholders)
+                AND post_status = 'publish'
+                AND openkbs_embedding IS NOT NULL
+                LIMIT %d OFFSET %d",
+                array_merge($post_types, [$chunk_size, $offset])
+            );
 
-                // Get featured image info
-                $image_info = openkbs_get_post_image($post->ID);
+            $posts = $wpdb->get_results($query);
 
-                // Get post excerpt
-                $excerpt = !empty($post->post_excerpt)
-                    ? $post->post_excerpt
-                    : wp_trim_words(strip_shortcodes($post->post_content), 55);
-
-                $results[] = [
-                    'id' => $post->ID,
-                    'title' => $post->post_title,
-                    'excerpt' => $excerpt,
-                    'similarity' => $similarity,
-                    'url' => get_permalink($post->ID),
-                    'post_type' => $post->post_type,
-                    'image' => $image_info
-                ];
+            if (empty($posts)) {
+                break;
             }
-        }
 
-        usort($results, function($a, $b) {
-            return $b['similarity'] <=> $a['similarity'];
-        });
+            foreach ($posts as $post) {
+                $post_embedding = json_decode($post->openkbs_embedding, true);
+                if ($post_embedding) {
+                    $similarity = openkbs_cosine_similarity($query_embedding, $post_embedding);
 
-        $results = array_slice($results, 0, $limit);
+                    // Only process if this result has a chance to be in the top N
+                    if (count($top_results) < $limit || $similarity > $min_similarity_threshold) {
+                        $image_info = openkbs_get_post_image($post->ID);
+
+                        // Get post excerpt
+                        $excerpt = !empty($post->post_excerpt)
+                            ? $post->post_excerpt
+                            : wp_trim_words(strip_shortcodes($post->post_content), 55);
+
+                        $result = [
+                            'id' => $post->ID,
+                            'title' => $post->post_title,
+                            'excerpt' => $excerpt,
+                            'similarity' => $similarity,
+                            'url' => get_permalink($post->ID),
+                            'post_type' => $post->post_type,
+                            'image' => $image_info
+                        ];
+
+                        $top_results[] = $result;
+
+                        // Sort and trim to keep only top N results
+                        usort($top_results, function($a, $b) {
+                            return $b['similarity'] <=> $a['similarity'];
+                        });
+
+                        if (count($top_results) > $limit) {
+                            array_pop($top_results); // Remove the lowest scoring result
+                            $min_similarity_threshold = end($top_results)['similarity'];
+                        }
+                    }
+                }
+            }
+
+            $offset += $chunk_size;
+
+        } while (count($posts) === $chunk_size);
 
         return new WP_REST_Response([
             'success' => true,
-            'results' => $results,
+            'results' => $top_results,
             'kbId' => $kbId
         ], 200);
 
