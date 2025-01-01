@@ -1,5 +1,32 @@
 <?php
 
+// Helper function to get the number of chat sessions for an IP
+function openkbs_get_chat_sessions_count($ip) {
+    $today = date('Y-m-d');
+    $safe_ip = str_replace([':', '.'], '_', $ip); // Replace : and . with _
+    $option_name = 'openkbs_chat_sessions_' . $today . '_' . $safe_ip;
+    return (int)get_option($option_name, 0);
+}
+
+// Helper function to increment the session count
+function openkbs_increment_chat_sessions_count($ip) {
+    $today = date('Y-m-d');
+    $safe_ip = str_replace([':', '.'], '_', $ip); // Replace : and . with _
+    $option_name = 'openkbs_chat_sessions_' . $today . '_' . $safe_ip;
+    $current_count = openkbs_get_chat_sessions_count($ip);
+    update_option($option_name, $current_count + 1);
+
+    // Set option to expire after 24 hours
+    if ($current_count === 0) {
+        wp_schedule_single_event(time() + 86400, 'openkbs_delete_chat_session_count', array($option_name));
+    }
+}
+
+// Add action to delete expired session counts
+add_action('openkbs_delete_chat_session_count', function($option_name) {
+    delete_option($option_name);
+});
+
 function create_openkbs_get_config($app) {
     $code = wp_unslash($app['public_chat']['openkbs_get_config']);
     $code = preg_replace('/^<\?(php)?\s+/', '', $code);
@@ -9,6 +36,11 @@ function create_openkbs_get_config($app) {
 
 function openkbs_create_public_chat_token($app) {
     $chat_config = create_openkbs_get_config($app)();
+
+    if ($chat_config["error"]) {
+        return $chat_config;
+    }
+
     $body = array(
         'action' => 'createPublicChatToken',
         'apiKey' => $app['apiKey'],
@@ -54,6 +86,12 @@ function openkbs_ajax_create_public_chat_token() {
 
     $app = $_POST['app'];
     $result = openkbs_create_public_chat_token($app);
+
+    if ($result["error"]) {
+        wp_send_json_error($result["message"]);
+        return;
+    }
+
     wp_send_json_success($result);
 }
 

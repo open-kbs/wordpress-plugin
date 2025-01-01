@@ -107,8 +107,9 @@ jQuery(document).ready(function($) {
                         }));
 
                         updateCloseButtonVisibility();
-                    } else {
+                    } else if (!response?.success && response.data) {
                         console.error('Invalid response format:', response);
+                        chatContainer.html(`<div class="chat-error">${response.data}</div>`);
                     }
                 },
                 error: function(error) {

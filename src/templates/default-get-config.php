@@ -9,6 +9,18 @@ function openkbs_get_config() {
     $current_user = wp_get_current_user();
     $is_logged_in = !empty($current_user->ID);
     $guest_id = 'Guest_' . substr(md5(time()), 0, 6);
+    $is_admin = $is_logged_in && current_user_can('manage_options');
+    $is_localhost = in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1', 'localhost', '0.0.0.0']);
+
+    $max_sessions_per_day = 3;
+
+    if (!$is_admin && !$is_localhost) {
+        $session_count = openkbs_get_chat_sessions_count($_SERVER['REMOTE_ADDR']);
+        if ($session_count >= $max_sessions_per_day) {
+            return [ 'error' => 'daily_limit_reached', 'message' => 'You have reached the maximum number of chat sessions.'];
+        }
+        openkbs_increment_chat_sessions_count($_SERVER['REMOTE_ADDR']);
+    }
 
     // Set user details
     $user_name = $is_logged_in ? $current_user->display_name : $guest_id;
