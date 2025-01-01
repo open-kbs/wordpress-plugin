@@ -287,7 +287,7 @@ function openkbs_settings_page() {
                                                   class="code-editor"><?php
                                             echo isset($app['public_chat']['openkbs_get_config'])
                                                 ? esc_textarea($app['public_chat']['openkbs_get_config'])
-                                                : esc_textarea(openkbs_get_default_field_function());
+                                                : esc_textarea(openkbs_get_default_config_function());
                                         ?></textarea>
                                     </div>
                                 </div>

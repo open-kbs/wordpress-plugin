@@ -12,7 +12,7 @@ function openkbs_get_config() {
     $is_admin = $is_logged_in && current_user_can('manage_options');
     $is_localhost = in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1', 'localhost', '0.0.0.0']);
 
-    $max_sessions_per_day = 3;
+    $max_sessions_per_day = 5;
 
     if (!$is_admin && !$is_localhost) {
         $session_count = openkbs_get_chat_sessions_count($_SERVER['REMOTE_ADDR']);
