@@ -69,8 +69,9 @@ function openkbs_create_public_chat_token($app) {
         ),
     );
 
-    $response = wp_remote_post('http://localhost:8012', $args);
-    // $response = wp_remote_post('https://chat.openkbs.com/', $args);
+    $chatUrl = 'https://chat.openkbs.com/';
+    // $chatUrl = 'http://localhost:8012';
+    $response = wp_remote_post($chatUrl, $args);
 
     $body = wp_remote_retrieve_body($response);
     $result = json_decode($body, true);

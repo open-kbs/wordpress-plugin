@@ -1,5 +1,7 @@
 jQuery(document).ready(function($) {
     let searchTimeout;
+    let pendingRequests = 0;
+    let currentXHR = null;
 
     function createResultItem(result) {
         const imageUrl = result.image.medium ? result.image.medium.url :
@@ -64,6 +66,12 @@ jQuery(document).ready(function($) {
         const searchOverlay = widget.find('.search-overlay');
         const itemTypes = input.data('item-types');
 
+        // Cancel previous request if it exists
+        if (currentXHR) {
+            currentXHR.abort();
+            pendingRequests = Math.max(0, pendingRequests - 1);
+        }
+
         clearTimeout(searchTimeout);
 
         if (query.length < 2) {
@@ -90,35 +98,41 @@ jQuery(document).ready(function($) {
                 requestData.itemTypes = itemTypes;
             }
 
-            $.ajax({
+            pendingRequests++;
+
+            currentXHR = $.ajax({
                 url: openkbsSearch.ajaxUrl,
                 method: 'GET',
                 data: requestData,
                 success: function(response) {
-                    loadingSpinner.hide();
-
-                    if (response.success && response.results.length > 0) {
-                        resultsContainer.empty();
-                        response.results.forEach(result => {
-                            resultsContainer.append(createResultItem(result));
-                        });
-                        widget.find('.results-title').text(`${response.results.length} results found`);
-                    } else {
-                        noResults.show();
-                        widget.find('.results-title').text('No results found');
+                    pendingRequests--;
+                    if (pendingRequests === 0) {
+                        loadingSpinner.hide();
+                        if (response.success && response.results.length > 0) {
+                            resultsContainer.empty();
+                            response.results.forEach(result => {
+                                resultsContainer.append(createResultItem(result));
+                            });
+                        } else {
+                            noResults.show();
+                            widget.find('.results-title').text('No results found');
+                        }
                     }
                 },
-                error: function(xhr) {
-                    loadingSpinner.hide();
-                    const msg = xhr?.status === 403
-                        ? 'Public Search API Disabled.' +
-                        'To enable it, please navigate to OpenKBS Search Settings'
-                        : 'An error occurred while searching. Please try again later.'
-                    resultsContainer.html(`<div class="error-message">${msg}</div>`);
-                    widget.find('.results-title').text('Error');
+                error: function(xhr, status, error) {
+                    pendingRequests--;
+                    if (pendingRequests === 0 && status !== 'abort') {
+                        loadingSpinner.hide();
+                        const msg = xhr?.status === 403
+                            ? 'Public Search API Disabled.' +
+                            'To enable it, please navigate to OpenKBS Search Settings'
+                            : 'An error occurred while searching. Please try again later.'
+                        resultsContainer.html(`<div class="error-message">${msg}</div>`);
+                        widget.find('.results-title').text('Error');
+                    }
                 }
             });
-        }, 500);
+        }, 300);
     });
 
     $('.openkbs-search-widget .search-button').click(function() {
