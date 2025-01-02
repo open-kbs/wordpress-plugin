@@ -346,14 +346,14 @@ function openkbs_settings_page() {
                                                                             
                                                                             <div class="example-section">
                                                                                 <p>Example:</p>
-                                                                                <p>If your wake word is set to "woo please", you can inject prompts like:</p>
-                                                                                <div class="example-box">woo please, generate all product details</div>
+                                                                                <p>If your wake word is set to "agent please", you can inject prompts like:</p>
+                                                                                <div class="example-box">agent please, generate all product details</div>
                                                                             </div>
                                                                             
                                                                             <div class="tip">
                                                                                 <p>Tip:</p>
                                                                                 <p>Place the wake word strategically in titles or descriptions to control when and where AI assistance is needed. You can also enclose your prompt within HTML comments to ensure it remains invisible to the user during AI processing, like this:</p>
-                                                                                <div class="example-box">iPhone 16 Pro &lt;!--woo please, generate a description for this product--&gt;</div>
+                                                                                <div class="example-box">iPhone 16 Pro &lt;!--agent please, generate a description for this product--&gt;</div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -361,7 +361,7 @@ function openkbs_settings_page() {
                                                                         name="openkbs_apps[<?php echo $app_id; ?>][wp_actions][<?php echo esc_attr($action); ?>][wakeword]" 
                                                                         value="<?php echo esc_attr($action_data['wakeword'] ?? ''); ?>" 
                                                                         class="wakeword-input" 
-                                                                        placeholder="woo please">
+                                                                        placeholder="agent please">
                                                                 </div>
                                                             </div>
                                                         <?php endforeach; ?>
@@ -829,7 +829,7 @@ function openkbs_settings_page() {
                 input.addClass('active').prop('disabled', false);
                 // Set default wakeword if empty
                 if (input.val() === '') {
-                    input.val('woo please');
+                    input.val('agent please');
                 }
             } else {
                 input.removeClass('active').prop('disabled', true).val('');
