@@ -22,7 +22,7 @@ function openkbs_render_search_settings() {
                             ?>
                                 <h4 style="margin-top: 0; color: #826200;">Shortcode for <?php echo esc_html($app['kbTitle']); ?></h4>
                                 <p style="margin-bottom: 10px;">
-                                    Copy and paste this shortcode into your WordPress page or post to add the search feature:
+                                    Copy and paste this shortcode into your WordPress page or post to add the search widget:
                                 </p>
                                 <code style="display: block; background: #fff; margin: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace;">
                                     [openkbs_search placeholder="Search here..." limit="5" kb_id="<?php echo esc_attr($app_id); ?>"]
@@ -55,7 +55,7 @@ function openkbs_render_search_settings() {
 
         <div style="max-width: 800px;">
             <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px;">Select Knowledge Base</label>
+                <label style="display: block; margin-bottom: 5px;">Select App</label>
                 <select id="search-kb-select" style="width: 100%; max-width: 400px;">
                     <?php
                     $apps = openkbs_get_apps();

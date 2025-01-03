@@ -70,8 +70,8 @@ function openkbs_settings_page() {
     ?>
     <div class="wrap">
        <h2 class="nav-tab-wrapper">
-            <a href="?page=openkbs-settings" class="nav-tab <?php echo $current_tab === 'general' ? 'nav-tab-active' : ''; ?>">General</a>
-            <a href="?page=openkbs-settings&tab=search" class="nav-tab <?php echo $current_tab === 'search' ? 'nav-tab-active' : ''; ?>">Public Search</a>
+            <a href="?page=openkbs-settings" class="nav-tab <?php echo $current_tab === 'general' ? 'nav-tab-active' : ''; ?>">Applications</a>
+            <a href="?page=openkbs-settings&tab=search" class="nav-tab <?php echo $current_tab === 'search' ? 'nav-tab-active' : ''; ?>">Public Search API</a>
             <a href="?page=openkbs-settings&tab=filesystem" class="nav-tab <?php echo $current_tab === 'filesystem' ? 'nav-tab-active' : ''; ?>">Filesystem API</a>
         </h2>
         <?php
