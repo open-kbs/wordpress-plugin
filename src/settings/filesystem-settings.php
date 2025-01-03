@@ -4,7 +4,6 @@ if (!defined('ABSPATH')) exit;
 function openkbs_render_filesystem_settings() {
     ?>
     <div class="filesystem-api-settings" style="margin-bottom: 30px; padding: 20px; background: #fff; border: 1px solid #ccc;">
-        <h3>Filesystem API Settings</h3>
         <table class="form-table">
             <tr>
                 <th scope="row">Enable Filesystem API</th>
