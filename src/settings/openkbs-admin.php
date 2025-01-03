@@ -71,7 +71,7 @@ function openkbs_settings_page() {
     <div class="wrap">
        <h2 class="nav-tab-wrapper">
             <a href="?page=openkbs-settings" class="nav-tab <?php echo $current_tab === 'general' ? 'nav-tab-active' : ''; ?>">General</a>
-            <a href="?page=openkbs-settings&tab=search" class="nav-tab <?php echo $current_tab === 'search' ? 'nav-tab-active' : ''; ?>">Search</a>
+            <a href="?page=openkbs-settings&tab=search" class="nav-tab <?php echo $current_tab === 'search' ? 'nav-tab-active' : ''; ?>">Public Search</a>
             <a href="?page=openkbs-settings&tab=filesystem" class="nav-tab <?php echo $current_tab === 'filesystem' ? 'nav-tab-active' : ''; ?>">Filesystem API</a>
         </h2>
         <?php
@@ -126,7 +126,7 @@ function openkbs_settings_page() {
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row">Semantic Search</th>
+                        <th scope="row">Semantic Search Indexing</th>
                         <td>
                             <label class="switch">
                                 <input type="checkbox"

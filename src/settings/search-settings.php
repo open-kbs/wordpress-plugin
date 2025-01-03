@@ -4,7 +4,54 @@ if (!defined('ABSPATH')) exit;
 function openkbs_render_search_settings() {
     ?>
     <div class="search-test-interface" style="margin-bottom: 30px; padding: 20px; background: #fff; border: 1px solid #ccc;">
-        <h3>Search Settings</h3>
+        <div class="public-search-settings" style="margin-bottom: 30px; padding: 20px; background: #fff; border: 1px solid #ccc;">
+            <table class="form-table">
+                <tr>
+                    <th scope="row">Enable Public Search API</th>
+                    <td>
+                        <label class="switch">
+                            <input type="checkbox" id="public-search-toggle"
+                                <?php checked(get_option('openkbs_public_search_enabled'), true); ?>>
+                            <span class="slider round"></span>
+                        </label>
+                        <div class="security-notice" style="margin-top: 15px; padding: 15px; background: #fff8e5; border-left: 4px solid #ffb900; <?php echo get_option('openkbs_public_search_enabled') ? '' : 'display: none;' ?>">
+                            <?php
+                            $apps = openkbs_get_apps();
+                            foreach ($apps as $app_id => $app) {
+                                if (isset($app['semantic_search']['enabled']) && $app['semantic_search']['enabled'] === 'on') {
+                            ?>
+                                <h4 style="margin-top: 0; color: #826200;">Shortcode for <?php echo esc_html($app['kbTitle']); ?></h4>
+                                <p style="margin-bottom: 10px;">
+                                    Copy and paste this shortcode into your WordPress page or post to add the search feature:
+                                </p>
+                                <code style="display: block; background: #fff; margin: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: monospace;">
+                                    [openkbs_search placeholder="Search here..." limit="5" kb_id="<?php echo esc_attr($app_id); ?>"]
+                                </code>
+                                <br />
+                            <?php
+                                }
+                            }
+                            ?>
+
+                            <h4 style="margin-top: 0; color: #826200;">ℹ️ Public Access Notice</h4>
+                            <p style="margin-bottom: 10px;">
+                                This setting enables a public search endpoint that can be accessed without authentication.
+                                When enabled, anyone can search your public content through the API at:
+                            </p>
+                            <code style="display: block; padding: 10px; background: #f7f7f7; margin: 10px 0;">
+                                <?php echo esc_url(rest_url('openkbs/v1/search-public')); ?>
+                            </code>
+                            <p style="margin-bottom: 0; color: #826200;">
+                                Only enable this if you want to allow public access to your semantic search functionality.
+                            </p>
+                        </div>
+                        <div id="public-search-status-message" style="display: none; margin-top: 10px; padding: 10px; border-radius: 4px;"></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Test Search</h3>
 
         <div style="max-width: 800px;">
             <div style="margin-bottom: 15px;">
@@ -41,36 +88,6 @@ function openkbs_render_search_settings() {
             </div>
         </div>
 
-        <br />
-        <div class="public-search-settings" style="margin-bottom: 30px; padding: 20px; background: #fff; border: 1px solid #ccc;">
-            <h3>Public Search API</h3>
-            <table class="form-table">
-                <tr>
-                    <th scope="row">Enable Public Search API</th>
-                    <td>
-                        <label class="switch">
-                            <input type="checkbox" id="public-search-toggle"
-                                <?php checked(get_option('openkbs_public_search_enabled'), true); ?>>
-                            <span class="slider round"></span>
-                        </label>
-                        <div class="security-notice" style="margin-top: 15px; padding: 15px; background: #fff8e5; border-left: 4px solid #ffb900;">
-                            <h4 style="margin-top: 0; color: #826200;">ℹ️ Public Access Notice</h4>
-                            <p style="margin-bottom: 10px;">
-                                This setting enables a public search endpoint that can be accessed without authentication.
-                                When enabled, anyone can search your public content through the API at:
-                            </p>
-                            <code style="display: block; padding: 10px; background: #f7f7f7; margin: 10px 0;">
-                                <?php echo esc_url(rest_url('openkbs/v1/search-public')); ?>
-                            </code>
-                            <p style="margin-bottom: 0; color: #826200;">
-                                Only enable this if you want to allow public access to your semantic search functionality.
-                            </p>
-                        </div>
-                        <div id="public-search-status-message" style="display: none; margin-top: 10px; padding: 10px; border-radius: 4px;"></div>
-                    </td>
-                </tr>
-            </table>
-        </div>
     </div>
         <script>
             jQuery(document).ready(function($) {
@@ -78,6 +95,7 @@ function openkbs_render_search_settings() {
                 $('#public-search-toggle').change(function() {
                     const isEnabled = $(this).is(':checked');
                     const statusMessage = $('#public-search-status-message');
+                    const securityNotice = $('.security-notice');
 
                     // Show loading state
                     $(this).prop('disabled', true);
@@ -101,6 +119,13 @@ function openkbs_render_search_settings() {
                                     'background-color': '#dff0d8',
                                     'color': '#3c763d'
                                 });
+
+                                // Show/hide the security notice based on the toggle state
+                                if (isEnabled) {
+                                    securityNotice.slideDown();
+                                } else {
+                                    securityNotice.slideUp();
+                                }
                             } else {
                                 statusMessage.html('Error: ' + response.data).css({
                                     'background-color': '#f2dede',

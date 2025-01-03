@@ -34,6 +34,19 @@
     transition: background-color 0.3s ease;
 }
 
+.search-button {
+    padding: 12px 20px;
+    background: #2271b1;
+    border: none;
+    border-radius: 0 8px 8px 0;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .search-button:hover {
     background: #135e96;
 }
