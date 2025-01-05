@@ -66,8 +66,8 @@ jQuery(document).ready(function($) {
 
     // Core Functions
     function createChatIframe(chatId, kbId, publicChatToken) {
-        const chatUrl = `https://${encodeURIComponent(kbId)}.apps.openkbs.com/chat/${encodeURIComponent(chatId)}?publicChatToken=${encodeURIComponent(publicChatToken)}`;
-        // const chatUrl = `http://${encodeURIComponent(kbId)}.apps.localhost:3000/chat/${encodeURIComponent(chatId)}?publicChatToken=${encodeURIComponent(publicChatToken)}`;
+        // const chatUrl = `https://${encodeURIComponent(kbId)}.apps.openkbs.com/chat/${encodeURIComponent(chatId)}?publicChatToken=${encodeURIComponent(publicChatToken)}`;
+        const chatUrl = `http://${encodeURIComponent(kbId)}.apps.localhost:3000/chat/${encodeURIComponent(chatId)}?publicChatToken=${encodeURIComponent(publicChatToken)}`;
 
         const iframe = $('<iframe>', {
             src: chatUrl,

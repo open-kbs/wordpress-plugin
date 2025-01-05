@@ -316,6 +316,8 @@ function openkbs_handle_search(WP_REST_Request $request) {
     $limit = isset($params['limit']) ? intval($params['limit']) : 10;
     $itemTypes = isset($params['itemTypes']) ? (array)$params['itemTypes'] : null;
     $kbId = (isset($params['kbId']) && $params['kbId']) ? $params['kbId'] : null;
+    $maxPrice = isset($params['maxPrice']) ? floatval($params['maxPrice']) : null;
+    $minPrice = isset($params['minPrice']) ? floatval($params['minPrice']) : null;
 
     try {
         // Get all public post types
@@ -446,6 +448,16 @@ function openkbs_handle_search(WP_REST_Request $request) {
                         if ($post->post_type === 'product' && function_exists('wc_get_product')) {
                             $product = wc_get_product($post->ID);
                             if ($product) {
+                                $price = floatval($product->get_price());
+
+                                if ($maxPrice !== null && $price > $maxPrice) {
+                                    continue;
+                                }
+
+                                if ($minPrice !== null && (empty($price) || $price < $minPrice)) {
+                                    continue;
+                                }
+
                                 $result['price'] = [
                                     'regular_price' => $product->get_regular_price(),
                                     'sale_price' => $product->get_sale_price(),
