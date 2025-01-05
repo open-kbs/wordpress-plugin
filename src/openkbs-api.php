@@ -435,7 +435,6 @@ function openkbs_handle_search(WP_REST_Request $request) {
                             : wp_trim_words(strip_shortcodes($post->post_content), 55);
 
                         $full_url = get_permalink($post->ID);
-                        $path = wp_parse_url($full_url, PHP_URL_PATH);
 
                         $result = [
                             'id' => $post->ID,
@@ -443,7 +442,6 @@ function openkbs_handle_search(WP_REST_Request $request) {
                             'excerpt' => $excerpt,
                             'similarity' => $similarity,
                             'url' => $full_url,
-                            'path' => $path,
                             'post_type' => $post->post_type,
                             'image' => $image_info
                         ];
