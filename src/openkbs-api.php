@@ -442,6 +442,19 @@ function openkbs_handle_search(WP_REST_Request $request) {
                             'image' => $image_info
                         ];
 
+                        // Add price information if the post is a WooCommerce product
+                        if ($post->post_type === 'product' && function_exists('wc_get_product')) {
+                            $product = wc_get_product($post->ID);
+                            if ($product) {
+                                $result['price'] = [
+                                    'regular_price' => $product->get_regular_price(),
+                                    'sale_price' => $product->get_sale_price(),
+                                    'current_price' => $product->get_price(),
+                                    'formatted_price' => $product->get_price_html()
+                                ];
+                            }
+                        }
+
                         $top_results[] = $result;
 
                         // Sort and trim to keep only top N results
