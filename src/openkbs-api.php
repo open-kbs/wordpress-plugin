@@ -450,7 +450,7 @@ function openkbs_handle_search(WP_REST_Request $request) {
                             if ($product) {
                                 $price = floatval($product->get_price());
 
-                                if ($maxPrice !== null && $price > $maxPrice) {
+                                if ($maxPrice !== null && (empty($price) || $price > $maxPrice)) {
                                     continue;
                                 }
 
