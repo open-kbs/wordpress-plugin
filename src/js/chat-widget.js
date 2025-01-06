@@ -144,6 +144,7 @@ jQuery(document).ready(function($) {
 
     // Whitelist of allowed origins (adjust based on your deployment)
     const ALLOWED_ORIGINS = [
+        'http://localhost:*',
         'https://*.apps.openkbs.com',
         'http://*.apps.localhost:3000'
     ];
