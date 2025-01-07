@@ -7,7 +7,7 @@ function openkbs_render_search_settings() {
         <div class="public-search-settings" style="margin-bottom: 30px; padding: 20px; background: #fff; border: 1px solid #ccc;">
             <table class="form-table">
                 <tr>
-                    <th scope="row">Enable Public Search API</th>
+                    <th scope="row">Public Search API</th>
                     <td>
                         <label class="switch">
                             <input type="checkbox" id="public-search-toggle"
