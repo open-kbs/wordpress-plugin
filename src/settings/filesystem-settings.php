@@ -6,7 +6,7 @@ function openkbs_render_filesystem_settings() {
     <div class="filesystem-api-settings" style="margin-bottom: 30px; padding: 20px; background: #fff; border: 1px solid #ccc;">
         <table class="form-table">
             <tr>
-                <th scope="row">Enable Filesystem API</th>
+                <th scope="row">Filesystem API</th>
                 <td>
                     <label class="switch">
                         <input type="checkbox" id="filesystem-api-toggle"
