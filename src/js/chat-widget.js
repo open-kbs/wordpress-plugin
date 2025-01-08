@@ -67,7 +67,7 @@ jQuery(document).ready(function($) {
     // Core Functions
     function createChatIframe(chatId, kbId, publicChatToken) {
         const chatUrl = `https://${encodeURIComponent(kbId)}.apps.openkbs.com/chat/${encodeURIComponent(chatId)}?publicChatToken=${encodeURIComponent(publicChatToken)}`;
-        // const chatUrl = `http://${encodeURIComponent(kbId)}.apps.localhost:3000/chat/${encodeURIComponent(chatId)}?publicChatToken=${encodeURIComponent(publicChatToken)}`;
+        // const chatUrl = `http://${encodeURIComponent(kbId)}.apps.localhost:3002/chat/${encodeURIComponent(chatId)}?publicChatToken=${encodeURIComponent(publicChatToken)}`;
 
         const iframe = $('<iframe>', {
             src: chatUrl,
@@ -146,7 +146,7 @@ jQuery(document).ready(function($) {
     const ALLOWED_ORIGINS = [
         'http://localhost:*',
         'https://*.apps.openkbs.com',
-        'http://*.apps.localhost:3000'
+        'http://*.apps.localhost:*'
     ];
 
     // Add more commands here
