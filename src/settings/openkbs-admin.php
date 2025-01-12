@@ -86,7 +86,7 @@ function openkbs_settings_page() {
 
             default: // 'Agents'
                 ?>
-        <form method="post" action="options.php">
+        <form method="post" action="options.php" id="openkbs-settings-form">
             <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">                
             <?php !empty($apps) && submit_button('Save All'); ?>
             </div>
@@ -895,7 +895,12 @@ function openkbs_settings_page() {
             });
 
             // Add notice container after the form
-            $('form').append('<div id="unsaved-changes-notice" style="display: none;" class="notice notice-warning is-dismissible"><p><strong>You have unsaved changes!</strong> Don\'t forget to click the "Save All" button to apply your changes.</p></div>');
+            $('form').append('<div id="unsaved-changes-notice" style="display: none;" class="notice notice-warning is-dismissible"><p><strong>You have unsaved changes!</strong> Don\'t forget to click the "Save All" button to apply your changes.</p><button type="button" class="button button-primary notice-save-all">Save All</button></div>');
+
+            // Add click handler for the new Save All button
+            $('.notice-save-all').click(function() {
+                $('input[type="submit"]').trigger('click');
+            });
 
             function showUnsavedChangesNotice() {
                 $('#unsaved-changes-notice').slideDown();
